@@ -3,169 +3,265 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MOA LAB COMPANY</title>
+    <title>사내 미니게임 천국 PRO</title>
     <style>
-        /* 공통 스타일 */
+        /* --- 공통 스타일 --- */
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #f0f2f5;
-            margin: 0;
-            padding: 20px;
-            text-align: center;
-            color: #333;
+            background-color: #202124; color: #fff; /* 다크 모드 기반 */
+            margin: 0; padding: 10px; text-align: center;
+            user-select: none;
         }
         .container {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            max-width: 600px;
-            margin: 0 auto;
+            background-color: #303134; padding: 20px; border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5); max-width: 600px; margin: 0 auto;
         }
-        h2 { color: #1a73e8; margin-bottom: 10px; }
-        .input-group { margin-bottom: 20px; }
+        h2 { color: #8ab4f8; margin: 0 0 10px 0; }
+        .desc { font-size: 13px; color: #9aa0a6; margin-bottom: 20px; }
+        
+        /* 입력창 스타일 */
+        .input-group { margin-bottom: 15px; text-align: left; background: #3c4043; padding: 10px; border-radius: 8px;}
+        .input-group label { display: block; font-size: 12px; color: #8ab4f8; margin-bottom: 5px; }
         input[type="text"] {
-            width: 80%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px;
+            width: 95%; padding: 10px; background: #202124; border: 1px solid #5f6368; 
+            border-radius: 5px; color: #fff; font-size: 16px;
         }
+
+        /* 버튼 스타일 */
+        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .btn {
-            background-color: #1a73e8; color: white; border: none; padding: 12px 20px;
-            font-size: 16px; border-radius: 10px; cursor: pointer; margin: 5px;
-            transition: 0.2s; width: 100%; max-width: 200px;
+            background-color: #8ab4f8; color: #202124; border: none; padding: 15px 0;
+            font-size: 15px; border-radius: 8px; cursor: pointer; font-weight: bold;
+            transition: transform 0.1s;
         }
-        .btn:hover { background-color: #1557b0; }
-        .btn:disabled { background-color: #ccc; cursor: not-allowed; }
-        .btn-green { background-color: #34a853; }
-        .btn-red { background-color: #ea4335; }
-        .btn-home { background-color: #5f6368; margin-top: 20px; }
+        .btn:active { transform: scale(0.95); }
+        .btn:disabled { background-color: #5f6368; color: #aaa; cursor: not-allowed; }
+        .btn-full { grid-column: span 2; background-color: #fbbc04; } /* 노란색 */
+        .btn-red { background-color: #f28b82; } /* 빨간색 */
+        .btn-green { background-color: #81c995; } /* 초록색 */
+        .btn-home { background-color: #5f6368; color: #fff; width: 100%; margin-top: 20px; padding: 10px; }
 
-        /* 화면 전환용 */
-        .scene { display: none; }
+        /* 화면 전환 */
+        .scene { display: none; animation: fadeIn 0.3s; }
         .active { display: block; }
-
-        /* --- 게임 1: 달리기 스타일 --- */
-        #track { width: 100%; border: 2px solid #eee; background: #fafafa; position: relative; border-radius: 10px; overflow: hidden; margin-top:10px;}
-        .lane { height: 50px; border-bottom: 1px dashed #eee; position: relative; }
-        .animal { position: absolute; left: 0; font-size: 30px; transition: left 0.1s linear; line-height: 50px;}
-        .finish-line { position: absolute; right: 10px; top: 0; bottom: 0; width: 4px; background: rgba(255,0,0,0.3); z-index: 1;}
-
-        /* --- 게임 2: 제비뽑기 스타일 --- */
-        .card-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 20px; }
-        .card {
-            width: 80px; height: 100px; background: #1a73e8; color: white;
-            border-radius: 8px; display: flex; align-items: center; justify-content: center;
-            font-weight: bold; cursor: pointer; transition: transform 0.5s;
-        }
-        .card.flipped { background: #fff; color: #333; border: 2px solid #1a73e8; transform: rotateY(180deg); }
-
-        /* --- 게임 3: 버티는 열매 스타일 --- */
-        #tree-area {
-            height: 350px; position: relative; background: #e8f5e9; border-radius: 15px; overflow: hidden; margin-top: 10px;
-        }
-        #tree-trunk {
-            width: 40px; height: 100px; background: #795548; margin: 0 auto;
-            position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
-        }
-        #tree-leaves {
-            width: 280px; height: 200px; background: #4caf50; border-radius: 50% 50% 40% 40%;
-            position: absolute; bottom: 90px; left: 50%; transform: translateX(-50%);
-            z-index: 1;
-        }
-        .shaking { animation: shake 0.5s infinite; }
-        @keyframes shake {
-            0% { transform: translateX(-50%) rotate(0deg); }
-            25% { transform: translateX(-50%) rotate(-5deg); }
-            50% { transform: translateX(-50%) rotate(0deg); }
-            75% { transform: translateX(-50%) rotate(5deg); }
-            100% { transform: translateX(-50%) rotate(0deg); }
-        }
-        .fruit {
-            position: absolute; width: 50px; height: 50px; background: #ff7043; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center; font-size: 12px; color: white; font-weight: bold;
-            z-index: 2; transition: top 0.5s ease-in; box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
-        }
-        .fallen { background: #bdbdbd; } /* 떨어진 열매 색 */
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         /* 결과창 */
-        .result-box { margin-top: 20px; padding: 15px; background: #e8f0fe; border-radius: 10px; text-align: left; }
-        .rank-item { padding: 5px; border-bottom: 1px solid #dcdcdc; }
-        .rank-1 { color: #d93025; font-weight: bold; font-size: 1.2em; }
+        .result-box { 
+            margin-top: 20px; padding: 15px; background: #3c4043; 
+            border-radius: 10px; text-align: left; border: 1px solid #5f6368;
+        }
+        .rank-item { padding: 8px; border-bottom: 1px solid #5f6368; font-size: 16px;}
+        .rank-1 { color: #fbbc04; font-weight: bold; font-size: 20px; border-bottom: 2px solid #fbbc04; }
+
+        /* --- 🏃 게임 1: 달리기 --- */
+        #track { width: 100%; border: 2px solid #5f6368; background: #202124; position: relative; border-radius: 10px; overflow: hidden; margin-top:10px; padding-bottom: 10px;}
+        .lane { height: 45px; border-bottom: 1px dashed #3c4043; position: relative; margin-top: 5px;}
+        .animal { position: absolute; left: 0; font-size: 28px; line-height: 45px; transition: left 0.2s linear; }
+        .finish-line { position: absolute; right: 15px; top: 0; bottom: 0; width: 2px; background: #f28b82; z-index: 0;}
+        .stumble { transform: rotate(-90deg); transition: transform 0.2s; } /* 넘어짐 효과 */
+
+        /* --- 🎲 게임 2: 제비뽑기 --- */
+        .card-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 20px; }
+        .card {
+            width: 70px; height: 90px; background: #8ab4f8; color: #202124;
+            border-radius: 5px; display: flex; align-items: center; justify-content: center;
+            font-weight: bold; font-size: 20px; cursor: pointer;
+        }
+        .card.flipped { background: #fff; transform: rotateY(180deg); transition: 0.5s; }
+        
+        /* --- 🌳 게임 3: 버티는 열매 --- */
+        #tree-area { height: 300px; position: relative; background: #e8f5e9; border-radius: 15px; overflow: hidden; margin-top: 10px; }
+        #tree-leaves {
+            width: 260px; height: 180px; background: #388e3c; border-radius: 50% 50% 40% 40%;
+            position: absolute; top: 20px; left: 50%; transform: translateX(-50%); z-index: 1; transform-origin: top center;
+        }
+        #tree-trunk { width: 30px; height: 120px; background: #5d4037; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); }
+        .shaking { animation: heavyShake 0.2s infinite; }
+        @keyframes heavyShake {
+            0% { transform: translateX(-50%) rotate(2deg); }
+            50% { transform: translateX(-50%) rotate(-2deg); }
+            100% { transform: translateX(-50%) rotate(2deg); }
+        }
+        .fruit {
+            position: absolute; width: 40px; height: 40px; background: #ff7043; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; font-size: 11px; color: white; font-weight: bold;
+            z-index: 2; transition: top 0.3s ease-in; box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+        }
+        .dangling { animation: dangle 1s infinite; transform-origin: top center; }
+        @keyframes dangle { 0%{transform: rotate(5deg);} 50%{transform: rotate(-5deg);} 100%{transform: rotate(5deg);} }
+
+        /* --- 💣 게임 4: 폭탄 해체 --- */
+        #bomb-area { text-align: center; margin-top: 20px; }
+        #bomb-display { font-size: 60px; margin: 20px 0; }
+        .wire-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+        .wire-btn { 
+            padding: 10px 15px; border-radius: 5px; border: none; font-weight: bold; cursor: pointer; 
+            background: #5f6368; color: white; flex: 1 0 40%; 
+        }
+        .wire-safe { background: #81c995 !important; opacity: 0.5; }
+        .wire-boom { background: #f28b82 !important; animation: shake 0.5s; }
+
+        /* --- 🌉 게임 5: 유리다리 --- */
+        #bridge-area { 
+            display: flex; flex-direction: column-reverse; align-items: center; 
+            background: #000; padding: 20px; border-radius: 10px; height: 400px; overflow-y: auto;
+            perspective: 600px;
+        }
+        .bridge-step { 
+            display: flex; justify-content: space-between; width: 200px; margin-bottom: 15px; 
+            transform: rotateX(20deg);
+        }
+        .glass { 
+            width: 90px; height: 60px; background: rgba(138, 180, 248, 0.3); 
+            border: 2px solid #8ab4f8; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; color: #fff; font-size: 12px; transition: 0.3s;
+        }
+        .glass-break { background: none; border: none; font-size: 0; background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><path d="M0 0 L10 10 M10 0 L0 10" stroke="white"/></svg>'); }
+        .player-token { font-size: 24px; position: absolute; transition: all 0.5s; z-index: 10; text-shadow: 0 0 5px #000;}
+
     </style>
 </head>
 <body>
 
     <div class="container">
         <div id="scene-menu" class="scene active">
-            <h2>🎮 사내 미니게임 천국</h2>
+            <h2>🎮 사내 미니게임 천국 PRO</h2>
+            <p class="desc">더 길고, 더 쫄깃하게!</p>
+            
             <div class="input-group">
-                <p>참가자 입력 (쉼표로 구분)</p>
-                <input type="text" id="global-names" value="김대리,이과장,박사원,최팀장" placeholder="이름 입력">
+                <label>📌 방 코드 (동기화용)</label>
+                <input type="text" id="room-code" placeholder="예: 점심내기 (비우면 랜덤)">
             </div>
-            <button class="btn" onclick="goToGame('race')">🏃 픽셀 달리기</button><br>
-            <button class="btn btn-green" onclick="goToGame('draw')">🎲 랜덤 제비뽑기</button><br>
-            <button class="btn btn-red" onclick="goToGame('fruit')">🌳 버티는 열매</button>
+            <div class="input-group">
+                <label>👥 참가자 (이름을 콤마로 구분)</label>
+                <input type="text" id="global-names" value="김대리,이과장,박사원,최팀장,정인턴">
+            </div>
+
+            <div class="btn-grid">
+                <button class="btn" onclick="goToGame('race')">🏃 달리기 (30초)</button>
+                <button class="btn btn-red" onclick="goToGame('bomb')">💣 폭탄 해체</button>
+                <button class="btn btn-green" onclick="goToGame('fruit')">🌳 버티는 열매</button>
+                <button class="btn" onclick="goToGame('bridge')">🌉 유리다리</button>
+                <button class="btn btn-full" onclick="goToGame('draw')">🎲 빠른 제비뽑기</button>
+            </div>
         </div>
 
         <div id="scene-race" class="scene">
-            <h3>🏃 픽셀 랜덤 달리기</h3>
+            <h3>🏃 대역전 레이스</h3>
+            <p class="desc">넘어지면 끝장입니다.</p>
             <div id="track"></div>
-            <button class="btn" id="btn-race-start" onclick="startRace()">달려라!!</button>
+            <br>
+            <button class="btn btn-full" id="btn-race-start" onclick="startRace()">준비... 땅!</button>
             <div id="race-result" class="result-box" style="display:none;"></div>
             <button class="btn btn-home" onclick="goHome()">메인으로</button>
         </div>
 
-        <div id="scene-draw" class="scene">
-            <h3>🎲 운명의 제비뽑기</h3>
-            <p>카드가 섞이고 있습니다...</p>
-            <div id="draw-area" class="card-grid"></div>
-            <button class="btn" id="btn-draw-start" onclick="startDraw()">뽑기 시작!</button>
-            <div id="draw-result" class="result-box" style="display:none;"></div>
+        <div id="scene-bomb" class="scene">
+            <h3>💣 폭탄 해체반</h3>
+            <p class="desc">가위바위보 순서대로 선을 자르세요.</p>
+            <div id="bomb-display">💣</div>
+            <div id="wire-box" class="wire-container"></div>
+            <div id="bomb-status" style="margin:10px; height: 20px; color: #f28b82;"></div>
+            <div id="bomb-result" class="result-box" style="display:none;"></div>
             <button class="btn btn-home" onclick="goHome()">메인으로</button>
         </div>
 
         <div id="scene-fruit" class="scene">
-            <h3>🌳 최후의 열매는 누구?</h3>
-            <p>가장 늦게 떨어지는 사람이 1등!</p>
+            <h3>🌳 끈질긴 녀석들</h3>
+            <p class="desc">마지막까지 매달린 사람이 승리!</p>
             <div id="tree-area">
                 <div id="tree-leaves"></div>
                 <div id="tree-trunk"></div>
             </div>
-            <button class="btn btn-red" id="btn-fruit-start" onclick="startFruit()">나무 흔들기!!</button>
+            <br>
+            <button class="btn btn-green" id="btn-fruit-start" onclick="startFruit()">나무 흔들기!</button>
             <div id="fruit-result" class="result-box" style="display:none;"></div>
+            <button class="btn btn-home" onclick="goHome()">메인으로</button>
+        </div>
+
+        <div id="scene-bridge" class="scene">
+            <h3>🌉 운명의 유리다리</h3>
+            <p class="desc">누가 가장 멀리 갈까요?</p>
+            <div id="bridge-area"></div>
+            <br>
+            <button class="btn" id="btn-bridge-start" onclick="startBridge()">게임 시작</button>
+            <div id="bridge-result" class="result-box" style="display:none;"></div>
+            <button class="btn btn-home" onclick="goHome()">메인으로</button>
+        </div>
+
+        <div id="scene-draw" class="scene">
+            <h3>🎲 스피드 제비뽑기</h3>
+            <div id="draw-area" class="card-grid"></div>
+            <br>
+            <button class="btn btn-full" id="btn-draw-start" onclick="startDraw()">오픈!</button>
+            <div id="draw-result" class="result-box" style="display:none;"></div>
             <button class="btn btn-home" onclick="goHome()">메인으로</button>
         </div>
     </div>
 
     <script>
-        // 공통 변수
-        let participants = [];
-        const animals = ['🐶','🐱','🐹','🦊','🐻','🐼','🐸','🐰'];
+        // --- 랜덤 시드 로직 (동기화 핵심) ---
+        let seedValue = 0;
+        function setSeed(str) {
+            let h = 2166136261 >>> 0;
+            for (let i = 0; i < str.length; i++) h = Math.imul(h ^ str.charCodeAt(i), 16777619);
+            seedValue = h >>> 0;
+        }
+        function myRandom() {
+            if (!document.getElementById('room-code').value.trim()) return Math.random();
+            seedValue = (Math.imul(1664525, seedValue) + 1013904223) | 0;
+            return ((seedValue >>> 0) / 4294967296);
+        }
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(myRandom() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
 
-        // 화면 전환 함수
+        // --- 공통 변수 ---
+        let participants = [];
+        const animals = ['🐶','🐱','🐹','🦊','🐻','🐼','🐸','🐰','🐯','🦁'];
+        
         function goHome() {
             document.querySelectorAll('.scene').forEach(el => el.classList.remove('active'));
             document.getElementById('scene-menu').classList.add('active');
         }
 
         function goToGame(gameType) {
-            const input = document.getElementById('global-names').value;
-            participants = input.split(',').map(n => n.trim()).filter(n => n);
+            const inputName = document.getElementById('global-names').value;
+            const inputCode = document.getElementById('room-code').value;
             
-            if (participants.length < 2) {
-                alert("최소 2명 이상의 참가자가 필요합니다!");
-                return;
-            }
+            participants = inputName.split(',').map(n => n.trim()).filter(n => n);
+            if (participants.length < 2) { alert("최소 2명 이상!"); return; }
+
+            if(inputCode.trim()) setSeed(inputCode + gameType);
 
             document.querySelectorAll('.scene').forEach(el => el.classList.remove('active'));
             document.getElementById(`scene-${gameType}`).classList.add('active');
 
-            // 게임별 초기화
-            if (gameType === 'race') initRace();
-            if (gameType === 'draw') initDraw();
-            if (gameType === 'fruit') initFruit();
+            if(gameType === 'race') initRace();
+            if(gameType === 'bomb') initBomb();
+            if(gameType === 'fruit') initFruit();
+            if(gameType === 'bridge') initBridge();
+            if(gameType === 'draw') initDraw();
         }
 
-        // --- 1. 달리기 게임 로직 ---
-        let raceInterval;
+        function showResult(elId, list, title="🏆 순위 발표") {
+            const box = document.getElementById(elId);
+            box.style.display = 'block';
+            let html = `<h4>${title}</h4>`;
+            list.forEach((name, i) => {
+                html += `<div class="rank-item ${i===0?'rank-1':''}">${i+1}위 : ${name}</div>`;
+            });
+            box.innerHTML = html;
+        }
+
+        // -------------------------
+        // 1. 달리기 (업그레이드: 스턴 추가, 속도 저하)
+        // -------------------------
         function initRace() {
             const track = document.getElementById('track');
             track.innerHTML = '<div class="finish-line"></div>';
@@ -175,146 +271,254 @@
             participants.forEach((name, i) => {
                 const lane = document.createElement('div');
                 lane.className = 'lane';
-                lane.innerHTML = `<span id="racer-${i}" class="animal" style="left:0%">${animals[i%animals.length]}</span> <small style="margin-left:5px">${name}</small>`;
+                lane.innerHTML = `<span id="racer-${i}" class="animal" style="left:0%">${animals[i%animals.length]}</span> <small style="margin-left:5px; position: absolute; left: 0; bottom: 0; font-size:10px; color:#aaa;">${name}</small>`;
                 track.appendChild(lane);
             });
         }
-
         function startRace() {
             document.getElementById('btn-race-start').disabled = true;
-            let racers = participants.map((name, i) => ({ id: i, name: name, pos: 0, finished: false }));
+            let racers = participants.map((name, i) => ({ id: i, name: name, pos: 0, finished: false, stun: 0 }));
             let rank = [];
             
-            raceInterval = setInterval(() => {
+            const raceInterval = setInterval(() => {
                 let allFinished = true;
                 racers.forEach(r => {
                     if (!r.finished) {
                         allFinished = false;
-                        let move = Math.random() * 2 + 0.5;
-                        if(Math.random() > 0.95) move += 5; // 부스터
+                        const el = document.getElementById(`racer-${r.id}`);
+                        
+                        // 스턴 상태면 못 움직임
+                        if (r.stun > 0) {
+                            r.stun--;
+                            el.style.transform = 'rotate(-90deg)'; // 누운 모습
+                            return; 
+                        } else {
+                            el.style.transform = 'rotate(0deg)';
+                        }
+
+                        // 이동 로직 (조금 느리게, 편차 크게)
+                        let move = myRandom() * 1.5; 
+                        if(myRandom() > 0.98) { move += 5; } // 부스터
+                        if(myRandom() > 0.98) { r.stun = 15; } // 1.5초 넘어짐 (스릴 요소)
+
                         r.pos += move;
-                        if (r.pos >= 90) {
-                            r.pos = 90;
+                        if (r.pos >= 88) {
+                            r.pos = 88;
                             r.finished = true;
                             rank.push(r.name);
                         }
-                        document.getElementById(`racer-${r.id}`).style.left = r.pos + '%';
+                        el.style.left = r.pos + '%';
                     }
                 });
-
-                if (allFinished) {
-                    clearInterval(raceInterval);
-                    showResult('race-result', rank);
-                }
-            }, 50);
+                if (allFinished) { clearInterval(raceInterval); showResult('race-result', rank); }
+            }, 100); // 0.1초마다 갱신 (좀 더 부드럽게)
         }
 
-        // --- 2. 제비뽑기 로직 ---
+        // -------------------------
+        // 2. 폭탄 해체 (신규: 러시안 룰렛)
+        // -------------------------
+        let bombPlayers = [];
+        let bombIndex = 0;
+        function initBomb() {
+            document.getElementById('wire-box').innerHTML = '';
+            document.getElementById('bomb-status').innerText = '';
+            document.getElementById('bomb-result').style.display = 'none';
+            document.getElementById('bomb-display').innerText = '💣';
+            
+            // 플레이어 순서 섞기
+            bombPlayers = shuffle([...participants]);
+            const box = document.getElementById('wire-box');
+            
+            bombPlayers.forEach((p, i) => {
+                const btn = document.createElement('button');
+                btn.className = 'wire-btn';
+                btn.innerText = `✂️ ${p}`;
+                btn.id = `wire-${i}`;
+                btn.onclick = () => cutWire(i, p);
+                box.appendChild(btn);
+            });
+            
+            // 폭탄 터질 순서 미리 정해놓기 (시드 기반)
+            bombIndex = Math.floor(myRandom() * bombPlayers.length); 
+            // 힌트: bombIndex 번째 사람이 자르면 터짐
+        }
+        
+        function cutWire(idx, name) {
+            const status = document.getElementById('bomb-status');
+            const btn = document.getElementById(`wire-${idx}`);
+            btn.disabled = true;
+            
+            status.innerText = `${name}님이 선을 자르는 중...`;
+            
+            setTimeout(() => {
+                if (idx === bombIndex) {
+                    // 꽝!
+                    document.getElementById('bomb-display').innerText = '💥';
+                    btn.classList.add('wire-boom');
+                    status.innerText = "펑!!!!";
+                    // 터진 사람이 꼴찌, 나머지는 생존
+                    let rank = bombPlayers.filter((_, i) => i !== idx); // 생존자
+                    rank.push(name); // 꼴찌 추가
+                    showResult('bomb-result', rank.reverse(), "💀 생존자 명단 (마지막이 꽝)");
+                    
+                    // 나머지 버튼 비활성
+                    document.querySelectorAll('.wire-btn').forEach(b => b.disabled = true);
+                } else {
+                    // 통과
+                    btn.classList.add('wire-safe');
+                    status.innerText = "휴... 안전합니다.";
+                }
+            }, 1000); // 1초 쫄깃함
+        }
+
+        // -------------------------
+        // 3. 열매 (업그레이드: 흔들기 시간 증가)
+        // -------------------------
+        function initFruit() {
+            const tree = document.getElementById('tree-leaves');
+            tree.innerHTML = ''; tree.classList.remove('shaking');
+            document.getElementById('fruit-result').style.display = 'none';
+            document.getElementById('btn-fruit-start').disabled = false;
+            
+            participants.forEach((name, i) => {
+                const fruit = document.createElement('div');
+                fruit.className = 'fruit dangling'; // 흔들거림 추가
+                fruit.id = `fruit-${i}`;
+                fruit.innerText = name;
+                fruit.style.left = (Math.random() * 200 + 10) + 'px'; 
+                fruit.style.top = (Math.random() * 100 + 20) + 'px';
+                tree.appendChild(fruit);
+            });
+        }
+        function startFruit() {
+            document.getElementById('btn-fruit-start').disabled = true;
+            const tree = document.getElementById('tree-leaves');
+            tree.classList.add('shaking');
+            
+            let fallenCount = 0;
+            let fallOrder = [];
+            // 떨어지는 시간 범위 대폭 증가 (최대 8초)
+            let times = participants.map(name => ({ name: name, time: myRandom() * 6000 + 2000 }));
+            times.sort((a, b) => a.time - b.time);
+
+            times.forEach((item) => {
+                setTimeout(() => {
+                    const elements = Array.from(document.querySelectorAll('.fruit:not(.fallen)'));
+                    const target = elements.find(el => el.innerText === item.name);
+                    if(target) {
+                        target.style.top = '300px'; 
+                        target.classList.add('fallen');
+                        target.classList.remove('dangling');
+                    }
+                    fallenCount++;
+                    fallOrder.push(item.name);
+                    if (fallenCount === participants.length) {
+                        tree.classList.remove('shaking');
+                        showResult('fruit-result', fallOrder.reverse());
+                    }
+                }, item.time);
+            });
+        }
+
+        // -------------------------
+        // 4. 유리다리 (신규: 오징어 게임)
+        // -------------------------
+        let bridgeStep = 0;
+        let bridgePlayers = [];
+        let bridgeMap = []; // 0: left safe, 1: right safe
+        
+        function initBridge() {
+            const area = document.getElementById('bridge-area');
+            area.innerHTML = '';
+            document.getElementById('bridge-result').style.display = 'none';
+            document.getElementById('btn-bridge-start').disabled = false;
+            bridgePlayers = shuffle([...participants]);
+            bridgeMap = [];
+            
+            // 다리 생성 (참가자 수 * 1.5배 길이)
+            const len = Math.max(5, participants.length + 3);
+            for(let i=0; i<len; i++) {
+                bridgeMap.push(myRandom() > 0.5 ? 0 : 1); // 정답 생성
+                const step = document.createElement('div');
+                step.className = 'bridge-step';
+                step.innerHTML = `
+                    <div class="glass" id="g-${i}-0" onclick="stepBridge(${i}, 0)">L</div>
+                    <div class="glass" id="g-${i}-1" onclick="stepBridge(${i}, 1)">R</div>
+                `;
+                area.prepend(step); // 아래서부터 쌓기
+            }
+            bridgeStep = 0;
+        }
+
+        function startBridge() {
+            document.getElementById('btn-bridge-start').disabled = true;
+            alert(`첫 번째 주자: ${bridgePlayers[0]}님 출발하세요!`);
+            highlightStep(0);
+        }
+
+        function highlightStep(idx) {
+            // 현재 밟아야 할 단계 표시 (간단히 색상 변경 등 가능하나 여기선 생략)
+        }
+
+        function stepBridge(row, choice) {
+            if (row !== bridgeStep) return; // 차례가 아닌 칸 클릭 방지
+            
+            const currentPlayer = bridgePlayers[0];
+            const correct = bridgeMap[row];
+            const glass = document.getElementById(`g-${row}-${choice}`);
+            
+            if (choice === correct) {
+                // 성공
+                glass.style.background = "#81c995"; // 초록
+                glass.innerText = currentPlayer;
+                bridgeStep++;
+                if (bridgeStep === bridgeMap.length) {
+                    alert(`${currentPlayer}님 통과! 우승!`);
+                    showResult('bridge-result', [currentPlayer, ...bridgePlayers.slice(1)], "🏆 최종 생존자");
+                }
+            } else {
+                // 실패 (와장창)
+                glass.classList.add('glass-break');
+                alert(`으악! ${currentPlayer} 탈락!`);
+                // 탈락자 명단 맨 뒤로 기록하거나 별도 처리
+                // 여기선 간단히 다음 사람에게 턴 넘김
+                bridgePlayers.shift(); // 현재 주자 제거
+                if (bridgePlayers.length === 0) {
+                    alert("전원 탈락... 게임 오버");
+                    showResult('bridge-result', participants, "💀 전원 사망 (기록 없음)");
+                } else {
+                    alert(`다음 주자: ${bridgePlayers[0]}님!`);
+                }
+            }
+        }
+
+        // -------------------------
+        // 5. 제비뽑기 (기존 유지)
+        // -------------------------
         function initDraw() {
             const area = document.getElementById('draw-area');
             area.innerHTML = '';
             document.getElementById('draw-result').style.display = 'none';
             document.getElementById('btn-draw-start').disabled = false;
-
-            participants.forEach((name, i) => {
-                const card = document.createElement('div');
-                card.className = 'card';
-                card.innerText = '?';
-                area.appendChild(card);
-            });
+            participants.forEach(() => area.innerHTML += '<div class="card">?</div>');
         }
-
         function startDraw() {
             document.getElementById('btn-draw-start').disabled = true;
             const area = document.getElementById('draw-area');
-            area.innerHTML = ''; // 기존 카드 지움
-            
-            // 셔플
-            let shuffled = [...participants].sort(() => Math.random() - 0.5);
-            let delay = 0;
-
+            area.innerHTML = '';
+            let shuffled = shuffle([...participants]);
             shuffled.forEach((name, i) => {
-                // 시각적 카드 생성
                 const card = document.createElement('div');
-                card.className = 'card';
-                card.innerText = '?';
+                card.className = 'card'; card.innerText = '?';
                 area.appendChild(card);
-
-                // 순차적으로 뒤집기
                 setTimeout(() => {
                     card.classList.add('flipped');
                     card.innerText = `${i+1}등\n${name}`;
-                }, i * 800 + 500);
+                    card.style.fontSize = "14px";
+                }, i * 300 + 200);
             });
-
-            setTimeout(() => {
-                showResult('draw-result', shuffled);
-            }, participants.length * 800 + 1000);
+            setTimeout(() => showResult('draw-result', shuffled), participants.length * 300 + 500);
         }
-
-        // --- 3. 버티는 열매 로직 ---
-        function initFruit() {
-            const tree = document.getElementById('tree-leaves');
-            tree.innerHTML = ''; // 초기화
-            tree.classList.remove('shaking');
-            document.getElementById('fruit-result').style.display = 'none';
-            document.getElementById('btn-fruit-start').disabled = false;
-
-            participants.forEach((name, i) => {
-                const fruit = document.createElement('div');
-                fruit.className = 'fruit';
-                fruit.id = `fruit-${i}`;
-                fruit.innerText = name;
-                // 랜덤 위치 (나무 잎사귀 범위 안)
-                fruit.style.left = (Math.random() * 200 + 20) + 'px'; 
-                fruit.style.top = (Math.random() * 120 + 20) + 'px';
-                tree.appendChild(fruit);
-            });
-        }
-
-        function startFruit() {
-            document.getElementById('btn-fruit-start').disabled = true;
-            const tree = document.getElementById('tree-leaves');
-            tree.classList.add('shaking'); // 나무 흔들기 시작
-
-            let fallenCount = 0;
-            let fallOrder = []; // 떨어진 순서 (1등이 가장 나중)
-            
-            // 각 열매마다 떨어지는 시간 랜덤 배정 (1초 ~ 5초 사이)
-            participants.forEach((name, i) => {
-                const fruit = document.getElementById(`fruit-${i}`);
-                const fallTime = Math.random() * 4000 + 1000; // 버티는 시간
-
-                setTimeout(() => {
-                    // 떨어지는 애니메이션
-                    fruit.style.top = '300px'; 
-                    fruit.classList.add('fallen');
-                    fallOrder.push(name);
-                    fallenCount++;
-
-                    // 모두 떨어지면 결과 발표
-                    if (fallenCount === participants.length) {
-                        tree.classList.remove('shaking');
-                        // 떨어진 순서의 역순이 순위 (나중에 떨어진게 1등)
-                        const rank = fallOrder.reverse(); 
-                        showResult('fruit-result', rank);
-                    }
-                }, fallTime);
-            });
-        }
-
-        // --- 공통 결과 출력 함수 ---
-        function showResult(elementId, rankList) {
-            const box = document.getElementById(elementId);
-            box.style.display = 'block';
-            let html = "<h4>🏆 결과 발표</h4>";
-            rankList.forEach((name, i) => {
-                const style = i === 0 ? "rank-1" : "";
-                html += `<div class="rank-item ${style}">${i+1}등 : ${name}</div>`;
-            });
-            box.innerHTML = html;
-        }
-
     </script>
 </body>
 </html>
