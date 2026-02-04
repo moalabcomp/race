@@ -3,214 +3,318 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>사내 픽셀 레이스</title>
+    <title>MOA LAB COMPANY</title>
     <style>
-        /* 모던한 폰트와 배경 적용 */
+        /* 공통 스타일 */
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: #f0f2f5;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
             margin: 0;
+            padding: 20px;
+            text-align: center;
             color: #333;
         }
-        /* 메인 카드 컨테이너 */
         .container {
             background-color: #fff;
-            padding: 2rem;
-            border-radius: 15px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            width: 90%;
-            max-width: 600px;
-            text-align: center;
-        }
-        h2 { color: #1a73e8; margin-bottom: 1.5rem; }
-        
-        /* 입력창 및 버튼 스타일 */
-        input[type="text"] {
-            width: 80%;
-            padding: 12px;
-            margin-bottom: 15px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 16px;
-        }
-        button {
-            background-color: #1a73e8;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            font-size: 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        button:hover { background-color: #1557b0; }
-        button:disabled { background-color: #a0c4ff; cursor: not-allowed; }
-
-        /* 게임 트랙 디자인 */
-        #game-area { display: none; margin-top: 20px; }
-        #track {
-            width: 100%;
-            border: 2px solid #e0e0e0;
-            background-color: #fafafa;
-            padding: 10px 0;
-            position: relative;
-            border-radius: 10px;
-            overflow: hidden;
-            margin-bottom: 20px;
-        }
-        .lane {
-            height: 60px;
-            border-bottom: 1px dashed #e0e0e0;
-            position: relative;
-            display: flex;
-            align-items: center;
-            padding-left: 10px;
-        }
-        .lane:last-child { border-bottom: none; }
-        .animal {
-            position: absolute;
-            left: 10px;
-            transition: left 0.15s linear;
-            font-size: 36px;
-            z-index: 2;
-        }
-        .finish-line {
-            position: absolute;
-            right: 20px;
-            top: 0;
-            bottom: 0;
-            width: 5px;
-            background-image: linear-gradient(45deg, #000 25%, transparent 25%, transparent 50%, #000 50%, #000 75%, transparent 75%, transparent);
-            background-size: 10px 10px;
-            background-color: #fff;
-            z-index: 1;
-            opacity: 0.3;
-        }
-        .racer-name {
-            margin-left: 50px;
-            color: #666;
-            font-weight: 500;
-        }
-
-        /* 결과창 디자인 */
-        #result {
-            margin-top: 25px;
             padding: 20px;
-            background-color: #e8f0fe;
-            border-radius: 10px;
-            color: #1a73e8;
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            max-width: 600px;
+            margin: 0 auto;
         }
-        #result h3 { margin-top: 0; color: #1a73e8; }
-        .rank-item { font-size: 18px; margin: 5px 0; }
-        .rank-1 { font-weight: bold; font-size: 22px; color: #d93025; }
+        h2 { color: #1a73e8; margin-bottom: 10px; }
+        .input-group { margin-bottom: 20px; }
+        input[type="text"] {
+            width: 80%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px;
+        }
+        .btn {
+            background-color: #1a73e8; color: white; border: none; padding: 12px 20px;
+            font-size: 16px; border-radius: 10px; cursor: pointer; margin: 5px;
+            transition: 0.2s; width: 100%; max-width: 200px;
+        }
+        .btn:hover { background-color: #1557b0; }
+        .btn:disabled { background-color: #ccc; cursor: not-allowed; }
+        .btn-green { background-color: #34a853; }
+        .btn-red { background-color: #ea4335; }
+        .btn-home { background-color: #5f6368; margin-top: 20px; }
+
+        /* 화면 전환용 */
+        .scene { display: none; }
+        .active { display: block; }
+
+        /* --- 게임 1: 달리기 스타일 --- */
+        #track { width: 100%; border: 2px solid #eee; background: #fafafa; position: relative; border-radius: 10px; overflow: hidden; margin-top:10px;}
+        .lane { height: 50px; border-bottom: 1px dashed #eee; position: relative; }
+        .animal { position: absolute; left: 0; font-size: 30px; transition: left 0.1s linear; line-height: 50px;}
+        .finish-line { position: absolute; right: 10px; top: 0; bottom: 0; width: 4px; background: rgba(255,0,0,0.3); z-index: 1;}
+
+        /* --- 게임 2: 제비뽑기 스타일 --- */
+        .card-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 20px; }
+        .card {
+            width: 80px; height: 100px; background: #1a73e8; color: white;
+            border-radius: 8px; display: flex; align-items: center; justify-content: center;
+            font-weight: bold; cursor: pointer; transition: transform 0.5s;
+        }
+        .card.flipped { background: #fff; color: #333; border: 2px solid #1a73e8; transform: rotateY(180deg); }
+
+        /* --- 게임 3: 버티는 열매 스타일 --- */
+        #tree-area {
+            height: 350px; position: relative; background: #e8f5e9; border-radius: 15px; overflow: hidden; margin-top: 10px;
+        }
+        #tree-trunk {
+            width: 40px; height: 100px; background: #795548; margin: 0 auto;
+            position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+        }
+        #tree-leaves {
+            width: 280px; height: 200px; background: #4caf50; border-radius: 50% 50% 40% 40%;
+            position: absolute; bottom: 90px; left: 50%; transform: translateX(-50%);
+            z-index: 1;
+        }
+        .shaking { animation: shake 0.5s infinite; }
+        @keyframes shake {
+            0% { transform: translateX(-50%) rotate(0deg); }
+            25% { transform: translateX(-50%) rotate(-5deg); }
+            50% { transform: translateX(-50%) rotate(0deg); }
+            75% { transform: translateX(-50%) rotate(5deg); }
+            100% { transform: translateX(-50%) rotate(0deg); }
+        }
+        .fruit {
+            position: absolute; width: 50px; height: 50px; background: #ff7043; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; font-size: 12px; color: white; font-weight: bold;
+            z-index: 2; transition: top 0.5s ease-in; box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+        }
+        .fallen { background: #bdbdbd; } /* 떨어진 열매 색 */
+
+        /* 결과창 */
+        .result-box { margin-top: 20px; padding: 15px; background: #e8f0fe; border-radius: 10px; text-align: left; }
+        .rank-item { padding: 5px; border-bottom: 1px solid #dcdcdc; }
+        .rank-1 { color: #d93025; font-weight: bold; font-size: 1.2em; }
     </style>
 </head>
 <body>
+
     <div class="container">
-        <h2>🏃‍♂️ 사내 픽셀 랜덤 레이스</h2>
-        <div id="setup">
-            <p style="color: #666; margin-bottom: 20px;">참가자 이름을 쉼표(,)로 구분해서 입력해 주세요.</p>
-            <input type="text" id="names" value="김대리,이과장,박사원,최팀장" placeholder="예: 홍길동, 김철수, 이영희">
-            <br>
-            <button onclick="initGame()">게임 준비 완료!</button>
+        <div id="scene-menu" class="scene active">
+            <h2>🎮 사내 미니게임 천국</h2>
+            <div class="input-group">
+                <p>참가자 입력 (쉼표로 구분)</p>
+                <input type="text" id="global-names" value="김대리,이과장,박사원,최팀장" placeholder="이름 입력">
+            </div>
+            <button class="btn" onclick="goToGame('race')">🏃 픽셀 달리기</button><br>
+            <button class="btn btn-green" onclick="goToGame('draw')">🎲 랜덤 제비뽑기</button><br>
+            <button class="btn btn-red" onclick="goToGame('fruit')">🌳 버티는 열매</button>
         </div>
 
-        <div id="game-area">
+        <div id="scene-race" class="scene">
+            <h3>🏃 픽셀 랜덤 달리기</h3>
             <div id="track"></div>
-            <button id="start-btn" onclick="startRace()">달려라!! 🏁</button>
-            <div id="result" style="display: none;"></div>
+            <button class="btn" id="btn-race-start" onclick="startRace()">달려라!!</button>
+            <div id="race-result" class="result-box" style="display:none;"></div>
+            <button class="btn btn-home" onclick="goHome()">메인으로</button>
+        </div>
+
+        <div id="scene-draw" class="scene">
+            <h3>🎲 운명의 제비뽑기</h3>
+            <p>카드가 섞이고 있습니다...</p>
+            <div id="draw-area" class="card-grid"></div>
+            <button class="btn" id="btn-draw-start" onclick="startDraw()">뽑기 시작!</button>
+            <div id="draw-result" class="result-box" style="display:none;"></div>
+            <button class="btn btn-home" onclick="goHome()">메인으로</button>
+        </div>
+
+        <div id="scene-fruit" class="scene">
+            <h3>🌳 최후의 열매는 누구?</h3>
+            <p>가장 늦게 떨어지는 사람이 1등!</p>
+            <div id="tree-area">
+                <div id="tree-leaves"></div>
+                <div id="tree-trunk"></div>
+            </div>
+            <button class="btn btn-red" id="btn-fruit-start" onclick="startFruit()">나무 흔들기!!</button>
+            <div id="fruit-result" class="result-box" style="display:none;"></div>
+            <button class="btn btn-home" onclick="goHome()">메인으로</button>
         </div>
     </div>
 
     <script>
-        const animals = ['🐶', '🐱', '🐹', '🦊', '🐻', '🐼', '🐸', '🐰', '🐯', '🦁', '🐷', '🐮'];
-        let racers = [];
-        let ranking = [];
-        let isRacing = false;
+        // 공통 변수
+        let participants = [];
+        const animals = ['🐶','🐱','🐹','🦊','🐻','🐼','🐸','🐰'];
 
-        function initGame() {
-            const nameInput = document.getElementById('names').value;
-            if (!nameInput.trim()) { alert("참가자 이름을 입력해주세요!"); return; }
-            const nameList = nameInput.split(',').map(n => n.trim()).filter(n => n);
-            if (nameList.length < 2) { alert("최소 2명 이상의 참가자가 필요합니다!"); return; }
+        // 화면 전환 함수
+        function goHome() {
+            document.querySelectorAll('.scene').forEach(el => el.classList.remove('active'));
+            document.getElementById('scene-menu').classList.add('active');
+        }
 
+        function goToGame(gameType) {
+            const input = document.getElementById('global-names').value;
+            participants = input.split(',').map(n => n.trim()).filter(n => n);
+            
+            if (participants.length < 2) {
+                alert("최소 2명 이상의 참가자가 필요합니다!");
+                return;
+            }
+
+            document.querySelectorAll('.scene').forEach(el => el.classList.remove('active'));
+            document.getElementById(`scene-${gameType}`).classList.add('active');
+
+            // 게임별 초기화
+            if (gameType === 'race') initRace();
+            if (gameType === 'draw') initDraw();
+            if (gameType === 'fruit') initFruit();
+        }
+
+        // --- 1. 달리기 게임 로직 ---
+        let raceInterval;
+        function initRace() {
             const track = document.getElementById('track');
             track.innerHTML = '<div class="finish-line"></div>';
-            racers = [];
-            ranking = [];
-            document.getElementById('result').style.display = 'none';
-            document.getElementById('result').innerHTML = '';
-
-            nameList.forEach((name, i) => {
+            document.getElementById('race-result').style.display = 'none';
+            document.getElementById('btn-race-start').disabled = false;
+            
+            participants.forEach((name, i) => {
                 const lane = document.createElement('div');
                 lane.className = 'lane';
-                const emoji = animals[i % animals.length];
-                lane.innerHTML = `<span id="racer-${i}" class="animal">${emoji}</span><span class="racer-name">${name}</span>`;
+                lane.innerHTML = `<span id="racer-${i}" class="animal" style="left:0%">${animals[i%animals.length]}</span> <small style="margin-left:5px">${name}</small>`;
                 track.appendChild(lane);
-                racers.push({ id: i, name: name, pos: 0, finished: false });
             });
-
-            document.getElementById('setup').style.display = 'none';
-            document.getElementById('game-area').style.display = 'block';
-            document.getElementById('start-btn').disabled = false;
         }
 
         function startRace() {
-            if (isRacing) return;
-            isRacing = true;
-            document.getElementById('start-btn').disabled = true;
-
-            const interval = setInterval(() => {
+            document.getElementById('btn-race-start').disabled = true;
+            let racers = participants.map((name, i) => ({ id: i, name: name, pos: 0, finished: false }));
+            let rank = [];
+            
+            raceInterval = setInterval(() => {
                 let allFinished = true;
                 racers.forEach(r => {
                     if (!r.finished) {
                         allFinished = false;
-                        // 속도 및 랜덤 요소 조절 (더 긴장감 있게)
-                        let move = Math.random() * 2.5 + 0.5; 
-                        if (Math.random() > 0.97) move += 8; // 강력한 부스터
-                        if (Math.random() > 0.96) move -= 4; // 미끄러짐
-
+                        let move = Math.random() * 2 + 0.5;
+                        if(Math.random() > 0.95) move += 5; // 부스터
                         r.pos += move;
-                        // 결승선 위치 조정 (트랙 너비 고려)
-                        if (r.pos >= 88) { 
-                            r.pos = 88;
+                        if (r.pos >= 90) {
+                            r.pos = 90;
                             r.finished = true;
-                            ranking.push(r.name);
+                            rank.push(r.name);
                         }
                         document.getElementById(`racer-${r.id}`).style.left = r.pos + '%';
                     }
                 });
 
                 if (allFinished) {
-                    clearInterval(interval);
-                    setTimeout(showResult, 500); // 잠시 후 결과 표시
+                    clearInterval(raceInterval);
+                    showResult('race-result', rank);
                 }
-            }, 100); // 프레임 속도 조절
+            }, 50);
         }
 
-        function showResult() {
-            const resDiv = document.getElementById('result');
-            resDiv.style.display = 'block';
-            let html = "<h3>🏆 경기 결과 🏆</h3>";
-            ranking.forEach((name, i) => {
-                const rankClass = i === 0 ? 'rank-1' : 'rank-item';
-                html += `<div class="${rankClass}">${i+1}등: ${name}</div>`;
+        // --- 2. 제비뽑기 로직 ---
+        function initDraw() {
+            const area = document.getElementById('draw-area');
+            area.innerHTML = '';
+            document.getElementById('draw-result').style.display = 'none';
+            document.getElementById('btn-draw-start').disabled = false;
+
+            participants.forEach((name, i) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerText = '?';
+                area.appendChild(card);
             });
-            resDiv.innerHTML = html;
-            isRacing = false;
-            // 게임 재시작 버튼 추가
-            resDiv.innerHTML += '<button onclick="resetGame()" style="margin-top: 20px; background-color: #34a853;">다시 하기</button>';
         }
-        
-        function resetGame() {
-            document.getElementById('setup').style.display = 'block';
-            document.getElementById('game-area').style.display = 'none';
-            document.getElementById('result').style.display = 'none';
+
+        function startDraw() {
+            document.getElementById('btn-draw-start').disabled = true;
+            const area = document.getElementById('draw-area');
+            area.innerHTML = ''; // 기존 카드 지움
+            
+            // 셔플
+            let shuffled = [...participants].sort(() => Math.random() - 0.5);
+            let delay = 0;
+
+            shuffled.forEach((name, i) => {
+                // 시각적 카드 생성
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerText = '?';
+                area.appendChild(card);
+
+                // 순차적으로 뒤집기
+                setTimeout(() => {
+                    card.classList.add('flipped');
+                    card.innerText = `${i+1}등\n${name}`;
+                }, i * 800 + 500);
+            });
+
+            setTimeout(() => {
+                showResult('draw-result', shuffled);
+            }, participants.length * 800 + 1000);
         }
+
+        // --- 3. 버티는 열매 로직 ---
+        function initFruit() {
+            const tree = document.getElementById('tree-leaves');
+            tree.innerHTML = ''; // 초기화
+            tree.classList.remove('shaking');
+            document.getElementById('fruit-result').style.display = 'none';
+            document.getElementById('btn-fruit-start').disabled = false;
+
+            participants.forEach((name, i) => {
+                const fruit = document.createElement('div');
+                fruit.className = 'fruit';
+                fruit.id = `fruit-${i}`;
+                fruit.innerText = name;
+                // 랜덤 위치 (나무 잎사귀 범위 안)
+                fruit.style.left = (Math.random() * 200 + 20) + 'px'; 
+                fruit.style.top = (Math.random() * 120 + 20) + 'px';
+                tree.appendChild(fruit);
+            });
+        }
+
+        function startFruit() {
+            document.getElementById('btn-fruit-start').disabled = true;
+            const tree = document.getElementById('tree-leaves');
+            tree.classList.add('shaking'); // 나무 흔들기 시작
+
+            let fallenCount = 0;
+            let fallOrder = []; // 떨어진 순서 (1등이 가장 나중)
+            
+            // 각 열매마다 떨어지는 시간 랜덤 배정 (1초 ~ 5초 사이)
+            participants.forEach((name, i) => {
+                const fruit = document.getElementById(`fruit-${i}`);
+                const fallTime = Math.random() * 4000 + 1000; // 버티는 시간
+
+                setTimeout(() => {
+                    // 떨어지는 애니메이션
+                    fruit.style.top = '300px'; 
+                    fruit.classList.add('fallen');
+                    fallOrder.push(name);
+                    fallenCount++;
+
+                    // 모두 떨어지면 결과 발표
+                    if (fallenCount === participants.length) {
+                        tree.classList.remove('shaking');
+                        // 떨어진 순서의 역순이 순위 (나중에 떨어진게 1등)
+                        const rank = fallOrder.reverse(); 
+                        showResult('fruit-result', rank);
+                    }
+                }, fallTime);
+            });
+        }
+
+        // --- 공통 결과 출력 함수 ---
+        function showResult(elementId, rankList) {
+            const box = document.getElementById(elementId);
+            box.style.display = 'block';
+            let html = "<h4>🏆 결과 발표</h4>";
+            rankList.forEach((name, i) => {
+                const style = i === 0 ? "rank-1" : "";
+                html += `<div class="rank-item ${style}">${i+1}등 : ${name}</div>`;
+            });
+            box.innerHTML = html;
+        }
+
     </script>
 </body>
 </html>
