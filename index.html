@@ -1,58 +1,162 @@
 <!DOCTYPE html>
-<html>
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>사내 픽셀 레이스</title>
     <style>
-        body { font-family: 'Courier New', Courier, monospace; text-align: center; background: #f0f0f0; }
-        #track { width: 90%; max-width: 500px; border: 4px solid #333; margin: 20px auto; background: #fff; padding: 10px; position: relative; }
-        .lane { height: 50px; border-bottom: 1px dashed #ccc; position: relative; display: flex; align-items: center; }
-        .animal { position: absolute; left: 0; transition: left 0.1s linear; font-size: 30px; }
-        .finish-line { position: absolute; right: 10px; top: 0; bottom: 0; width: 5px; background: red; }
-        .controls { margin-top: 20px; }
-        input { padding: 5px; margin: 2px; }
+        /* 모던한 폰트와 배경 적용 */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            color: #333;
+        }
+        /* 메인 카드 컨테이너 */
+        .container {
+            background-color: #fff;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            width: 90%;
+            max-width: 600px;
+            text-align: center;
+        }
+        h2 { color: #1a73e8; margin-bottom: 1.5rem; }
+        
+        /* 입력창 및 버튼 스타일 */
+        input[type="text"] {
+            width: 80%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #1a73e8;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        button:hover { background-color: #1557b0; }
+        button:disabled { background-color: #a0c4ff; cursor: not-allowed; }
+
+        /* 게임 트랙 디자인 */
+        #game-area { display: none; margin-top: 20px; }
+        #track {
+            width: 100%;
+            border: 2px solid #e0e0e0;
+            background-color: #fafafa;
+            padding: 10px 0;
+            position: relative;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        .lane {
+            height: 60px;
+            border-bottom: 1px dashed #e0e0e0;
+            position: relative;
+            display: flex;
+            align-items: center;
+            padding-left: 10px;
+        }
+        .lane:last-child { border-bottom: none; }
+        .animal {
+            position: absolute;
+            left: 10px;
+            transition: left 0.15s linear;
+            font-size: 36px;
+            z-index: 2;
+        }
+        .finish-line {
+            position: absolute;
+            right: 20px;
+            top: 0;
+            bottom: 0;
+            width: 5px;
+            background-image: linear-gradient(45deg, #000 25%, transparent 25%, transparent 50%, #000 50%, #000 75%, transparent 75%, transparent);
+            background-size: 10px 10px;
+            background-color: #fff;
+            z-index: 1;
+            opacity: 0.3;
+        }
+        .racer-name {
+            margin-left: 50px;
+            color: #666;
+            font-weight: 500;
+        }
+
+        /* 결과창 디자인 */
+        #result {
+            margin-top: 25px;
+            padding: 20px;
+            background-color: #e8f0fe;
+            border-radius: 10px;
+            color: #1a73e8;
+        }
+        #result h3 { margin-top: 0; color: #1a73e8; }
+        .rank-item { font-size: 18px; margin: 5px 0; }
+        .rank-1 { font-weight: bold; font-size: 22px; color: #d93025; }
     </style>
 </head>
 <body>
-    <h2>🏃‍♂️ 사내 픽셀 랜덤 레이스</h2>
-    <div id="setup">
-        <p>참가자 이름을 쉼표(,)로 구분해서 적어주세요:</p>
-        <input type="text" id="names" value="김대리,이과장,박사원,최팀장" style="width: 80%;">
-        <br><button onclick="initGame()" style="margin-top:10px; padding: 10px 20px;">게임 준비!</button>
-    </div>
+    <div class="container">
+        <h2>🏃‍♂️ 사내 픽셀 랜덤 레이스</h2>
+        <div id="setup">
+            <p style="color: #666; margin-bottom: 20px;">참가자 이름을 쉼표(,)로 구분해서 입력해 주세요.</p>
+            <input type="text" id="names" value="김대리,이과장,박사원,최팀장" placeholder="예: 홍길동, 김철수, 이영희">
+            <br>
+            <button onclick="initGame()">게임 준비 완료!</button>
+        </div>
 
-    <div id="game-area" style="display:none;">
-        <div id="track"></div>
-        <button id="start-btn" onclick="startRace()" style="padding: 10px 20px;">달려라!!</button>
-        <div id="result" style="margin-top: 20px; font-weight: bold; color: blue;"></div>
+        <div id="game-area">
+            <div id="track"></div>
+            <button id="start-btn" onclick="startRace()">달려라!! 🏁</button>
+            <div id="result" style="display: none;"></div>
+        </div>
     </div>
 
     <script>
-        const animals = ['🐶', '🐱', '🐹', '🦊', '🐻', '🐼', '🐸', '🐰'];
+        const animals = ['🐶', '🐱', '🐹', '🦊', '🐻', '🐼', '🐸', '🐰', '🐯', '🦁', '🐷', '🐮'];
         let racers = [];
         let ranking = [];
         let isRacing = false;
 
         function initGame() {
             const nameInput = document.getElementById('names').value;
-            const nameList = nameInput.split(',').map(n => n.trim());
+            if (!nameInput.trim()) { alert("참가자 이름을 입력해주세요!"); return; }
+            const nameList = nameInput.split(',').map(n => n.trim()).filter(n => n);
+            if (nameList.length < 2) { alert("최소 2명 이상의 참가자가 필요합니다!"); return; }
+
             const track = document.getElementById('track');
             track.innerHTML = '<div class="finish-line"></div>';
             racers = [];
             ranking = [];
-            document.getElementById('result').innerText = '';
+            document.getElementById('result').style.display = 'none';
+            document.getElementById('result').innerHTML = '';
 
             nameList.forEach((name, i) => {
                 const lane = document.createElement('div');
                 lane.className = 'lane';
                 const emoji = animals[i % animals.length];
-                lane.innerHTML = `<span id="racer-${i}" class="animal">${emoji}</span><small style="margin-left: 40px; color: #888;">${name}</small>`;
+                lane.innerHTML = `<span id="racer-${i}" class="animal">${emoji}</span><span class="racer-name">${name}</span>`;
                 track.appendChild(lane);
                 racers.push({ id: i, name: name, pos: 0, finished: false });
             });
 
             document.getElementById('setup').style.display = 'none';
             document.getElementById('game-area').style.display = 'block';
+            document.getElementById('start-btn').disabled = false;
         }
 
         function startRace() {
@@ -65,14 +169,15 @@
                 racers.forEach(r => {
                     if (!r.finished) {
                         allFinished = false;
-                        // 기본 이동 + 랜덤 요소 (중간에 부스터나 삐끗함 반영)
-                        let move = Math.random() * 8; 
-                        if (Math.random() > 0.95) move += 15; // 깜짝 부스터!
-                        if (Math.random() > 0.98) move -= 10; // 바나나 밟음!
+                        // 속도 및 랜덤 요소 조절 (더 긴장감 있게)
+                        let move = Math.random() * 2.5 + 0.5; 
+                        if (Math.random() > 0.97) move += 8; // 강력한 부스터
+                        if (Math.random() > 0.96) move -= 4; // 미끄러짐
 
                         r.pos += move;
-                        if (r.pos >= 85) { // 결승선 도달 (퍼센트 기준)
-                            r.pos = 85;
+                        // 결승선 위치 조정 (트랙 너비 고려)
+                        if (r.pos >= 88) { 
+                            r.pos = 88;
                             r.finished = true;
                             ranking.push(r.name);
                         }
@@ -82,17 +187,29 @@
 
                 if (allFinished) {
                     clearInterval(interval);
-                    showResult();
+                    setTimeout(showResult, 500); // 잠시 후 결과 표시
                 }
-            }, 100);
+            }, 100); // 프레임 속도 조절
         }
 
         function showResult() {
             const resDiv = document.getElementById('result');
-            resDiv.innerHTML = "<h3>🏆 결과 발표 🏆</h3>" + 
-                ranking.map((name, i) => `${i+1}등: ${name}`).join('<br>');
+            resDiv.style.display = 'block';
+            let html = "<h3>🏆 경기 결과 🏆</h3>";
+            ranking.forEach((name, i) => {
+                const rankClass = i === 0 ? 'rank-1' : 'rank-item';
+                html += `<div class="${rankClass}">${i+1}등: ${name}</div>`;
+            });
+            resDiv.innerHTML = html;
             isRacing = false;
-            document.getElementById('start-btn').disabled = false;
+            // 게임 재시작 버튼 추가
+            resDiv.innerHTML += '<button onclick="resetGame()" style="margin-top: 20px; background-color: #34a853;">다시 하기</button>';
+        }
+        
+        function resetGame() {
+            document.getElementById('setup').style.display = 'block';
+            document.getElementById('game-area').style.display = 'none';
+            document.getElementById('result').style.display = 'none';
         }
     </script>
 </body>
