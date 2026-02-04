@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>사내 미니게임 LIVE (통합판)</title>
+    <title>사내 미니게임 LIVE (올림픽 에디션)</title>
     <style>
         /* --- 공통 스타일 (다크모드) --- */
         body {
@@ -11,7 +11,7 @@
             background-color: #121212; color: #fff;
             margin: 0; padding: 0; text-align: center;
             user-select: none; -webkit-user-select: none;
-            touch-action: manipulation; /* 줌 방지 */
+            touch-action: manipulation; 
             overflow-x: hidden;
         }
         .container {
@@ -38,27 +38,35 @@
         .btn-retry { background: #ffeb3b; color: #000; margin-top: 10px; }
 
         .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        
+        /* 그룹 게임 버튼 색상 */
         .c-race { background: #ff7597; } .c-bomb { background: #ffb74d; }
         .c-tree { background: #aed581; } .c-bridge { background: #4fc3f7; }
         .c-pong { background: #ffeb3b; grid-column: span 2; }
         .c-draw { background: #ba68c8; grid-column: span 2; }
+
+        /* 개인 게임 버튼 색상 */
+        .p-shoot { background: #ef5350; color:white; }
+        .p-dodge { background: #42a5f5; color:white; }
+        .p-soccer { background: #fff; color:#000; border: 2px solid #000;}
+        .p-basket { background: #ff9800; color:#000; }
 
         /* 화면 전환 */
         .scene { display: none; animation: fadeIn 0.3s; }
         .active { display: block; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* --- 📋 그룹 모드 스타일 --- */
+        /* --- 📋 그룹 모드 UI --- */
         .roster-box { background: #2c2c2c; padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: left; }
         textarea { width: 100%; height: 60px; background: #333; color: white; border: 1px solid #555; border-radius: 8px; box-sizing: border-box; }
         .player-tag { background: #3700b3; color: white; padding: 4px 10px; border-radius: 15px; font-size: 12px; margin-right: 5px; display: inline-block; margin-top:5px; }
         
-        /* 그룹 게임 요소 (간략화) */
+        /* 그룹 게임 요소 */
         #track { background: #333; border-radius: 10px; padding: 10px 0; margin-top: 15px; }
         .lane { height: 40px; border-bottom: 1px dashed #555; position: relative; }
         .animal { position: absolute; left: 0; font-size: 24px; line-height: 40px; transition: left 0.1s linear; }
         
-        /* --- 👤 개인 모드 스타일 --- */
+        /* --- 👤 개인 모드 UI --- */
         .game-canvas-box {
             position: relative; width: 100%; max-width: 400px; height: 400px; margin: 0 auto;
             background: #000; border: 2px solid #555; border-radius: 10px; overflow: hidden;
@@ -75,7 +83,7 @@
             text-shadow: 2px 2px 0 #000; z-index: 10; pointer-events: none;
         }
 
-        /* 컨트롤러 (모바일용) */
+        /* 컨트롤러 (똥피하기용) */
         .mobile-controls {
             display: flex; justify-content: space-between; margin-top: 10px; gap: 10px;
         }
@@ -130,66 +138,96 @@
 
     <div id="scene-group-game" class="scene">
         <h3 id="g-title">게임 제목</h3>
-        <div id="g-content"></div> <button class="btn" id="g-start-btn" style="background:#fff; margin-top:10px;" onclick="runGroupGame()">시작하기</button>
+        <div id="g-content"></div>
+        <button class="btn" id="g-start-btn" style="background:#fff; margin-top:10px;" onclick="runGroupGame()">시작하기</button>
         <div id="g-result" class="capture-card" style="display:none; background:#222; color:#fff;"></div>
         <button class="btn btn-home" onclick="goLobby()">목록으로</button>
     </div>
 
 
     <div id="scene-personal-menu" class="scene">
-        <h2>👤 개인 기록 도전</h2>
-        <p style="color:#aaa; font-size:13px;">최고 점수를 캡처해서 공유하세요!</p>
+        <h2>👤 사내 올림픽</h2>
+        <p style="color:#aaa; font-size:13px;">종목을 선택하고 최고 기록에 도전하세요!</p>
         
-        <button class="btn" style="background:#ff5252; color:#fff; padding: 25px 0;" onclick="startShootingGame()">
-            🔫 스나이퍼 사격<br><span style="font-size:12px; font-weight:normal;">30초 동안 타겟 맞추기</span>
-        </button>
-        
-        <button class="btn" style="background:#448aff; color:#fff; padding: 25px 0;" onclick="startDodgeGame()">
-            ☄️ 똥 피하기 (키보드/터치)<br><span style="font-size:12px; font-weight:normal;">하늘에서 떨어지는 장애물 피하기</span>
-        </button>
+        <div class="btn-grid">
+            <button class="btn p-soccer" onclick="startSoccerGame()">⚽ 승부차기</button>
+            <button class="btn p-basket" onclick="startBasketGame()">🏀 농구</button>
+            <button class="btn p-shoot" onclick="startShootingGame()">🔫 사격</button>
+            <button class="btn p-dodge" onclick="startDodgeGame()">☄️ 똥피하기</button>
+        </div>
 
         <button class="btn btn-home" onclick="goHome()">⬅ 처음으로</button>
     </div>
 
     <div id="scene-shooting" class="scene">
         <h3>🔫 스나이퍼 사격</h3>
-        <p style="font-size:12px; color:#aaa;">나타나는 타겟을 빠르게 클릭하세요!</p>
+        <p style="font-size:12px; color:#aaa;">나타나는 타겟을 빠르게 터치!</p>
         <div class="game-canvas-box">
             <canvas id="canvas-shoot"></canvas>
             <div class="score-board">SCORE: <span id="s-score">0</span></div>
             <div class="time-board">TIME: <span id="s-time">30</span></div>
         </div>
         <div id="res-shooting" class="capture-card" style="display:none">
-            <div class="capture-title">🔫 스나이퍼 사격 결과</div>
+            <div class="capture-title">🔫 사격 결과</div>
             <div class="capture-score" id="final-s-score">0점</div>
-            <div class="capture-rank" id="s-rank-msg"></div>
-            <div style="font-size:11px; color:#888; margin-top:5px;">이 화면을 캡처해서 공유하세요!</div>
+            <div style="font-size:11px; color:#888;">캡처해서 공유하세요!</div>
         </div>
         <button class="btn btn-retry" onclick="startShootingGame()">🔄 다시 하기</button>
-        <button class="btn btn-home" onclick="goPersonalMenu()">메뉴로 나가기</button>
+        <button class="btn btn-home" onclick="goPersonalMenu()">메뉴로</button>
     </div>
 
     <div id="scene-dodge" class="scene">
         <h3>☄️ 장애물 피하기</h3>
-        <p style="font-size:12px; color:#aaa;">PC: 방향키(← →) / 모바일: 하단 버튼</p>
+        <p style="font-size:12px; color:#aaa;">버튼을 눌러 피하세요!</p>
         <div class="game-canvas-box">
             <canvas id="canvas-dodge"></canvas>
             <div class="score-board">SCORE: <span id="d-score">0</span></div>
         </div>
-        
         <div class="mobile-controls">
             <button class="control-btn" ontouchstart="moveDodge('left')" onmousedown="moveDodge('left')" ontouchend="stopDodge()" onmouseup="stopDodge()">⬅</button>
             <button class="control-btn" ontouchstart="moveDodge('right')" onmousedown="moveDodge('right')" ontouchend="stopDodge()" onmouseup="stopDodge()">➡</button>
         </div>
-
         <div id="res-dodge" class="capture-card" style="display:none">
             <div class="capture-title">☄️ 생존 기록</div>
             <div class="capture-score" id="final-d-score">0점</div>
-            <div class="capture-rank">당신의 순발력은?</div>
-            <div style="font-size:11px; color:#888; margin-top:5px;">이 화면을 캡처해서 공유하세요!</div>
+            <div style="font-size:11px; color:#888;">캡처해서 공유하세요!</div>
         </div>
         <button class="btn btn-retry" onclick="startDodgeGame()">🔄 다시 하기</button>
-        <button class="btn btn-home" onclick="goPersonalMenu()">메뉴로 나가기</button>
+        <button class="btn btn-home" onclick="goPersonalMenu()">메뉴로</button>
+    </div>
+
+    <div id="scene-soccer" class="scene">
+        <h3>⚽ 승부차기 (PK)</h3>
+        <p style="font-size:12px; color:#aaa;">빈 곳을 노려 터치하세요! (골키퍼를 피해라)</p>
+        <div class="game-canvas-box" style="background: #4caf50;">
+            <canvas id="canvas-soccer"></canvas>
+            <div class="score-board">GOAL: <span id="pk-score">0</span></div>
+            <div class="time-board">TIME: <span id="pk-time">30</span></div>
+        </div>
+        <div id="res-soccer" class="capture-card" style="display:none">
+            <div class="capture-title">⚽ 득점왕</div>
+            <div class="capture-score" id="final-pk-score">0골</div>
+            <div style="font-size:11px; color:#888;">캡처해서 공유하세요!</div>
+        </div>
+        <button class="btn btn-retry" onclick="startSoccerGame()">🔄 다시 하기</button>
+        <button class="btn btn-home" onclick="goPersonalMenu()">메뉴로</button>
+    </div>
+
+    <div id="scene-basket" class="scene">
+        <h3>🏀 농구 슈팅</h3>
+        <p style="font-size:12px; color:#aaa;">골대 거리를 계산해서 터치! (포물선)</p>
+        <div class="game-canvas-box" style="background: #37474f;">
+            <canvas id="canvas-basket"></canvas>
+            <div class="score-board">SCORE: <span id="bk-score">0</span></div>
+            <div class="time-board">TIME: <span id="bk-time">30</span></div>
+        </div>
+        <div id="res-basket" class="capture-card" style="display:none">
+            <div class="capture-title">🏀 농구 천재</div>
+            <div class="capture-score" id="final-bk-score">0점</div>
+            <div style="font-size:11px; color:#888;">캡처해서 공유하세요!</div>
+        </div>
+        <button class="btn btn-retry" onclick="startBasketGame()">🔄 다시 하기</button>
+        <button class="btn btn-home" onclick="goPersonalMenu()">메뉴로</button>
     </div>
 
 </div>
@@ -206,15 +244,13 @@
     }
     
     function stopAllGames() {
-        // 그룹 게임 타이머 정리
         if(window.groupTimer) clearInterval(window.groupTimer);
-        // 개인 게임 루프 정리
-        if(window.shootTimer) clearInterval(window.shootTimer);
+        if(window.gameTimer) clearInterval(window.gameTimer);
         if(window.gameLoop) cancelAnimationFrame(window.gameLoop);
         window.isGameRunning = false;
     }
 
-    /* ================= 그룹 모드 로직 (요약) ================= */
+    /* ================= 그룹 모드 로직 ================= */
     let players = [];
     let curGroupGame = '';
     const animals = ['🐶','🐱','🐹','🦊','🐻','🐼','🐸','🐰'];
@@ -256,7 +292,7 @@
         // bridge, pong은 개별 start 함수 있음
     }
 
-    // -- 그룹 게임 UI 초기화 및 실행 함수들 (공간 절약을 위해 핵심만) --
+    // -- 그룹 게임 UI/로직 (축약) --
     function initRaceUI(){const t=document.querySelector('#track');t.innerHTML='<div style="position:absolute; right:10px; height:100%; width:2px; background:red;"></div>';players.forEach((p,i)=>t.innerHTML+=`<div class="lane"><span id="r-${i}" class="animal">${animals[i%8]}</span><small style="margin-left:30px">${p}</small></div>`)}
     function startRace(){document.getElementById('g-start-btn').style.display='none';let racers=players.map((p,i)=>({id:i,n:p,x:0}));window.groupTimer=setInterval(()=>{let done=true;racers.forEach(r=>{if(r.x<90){done=false;r.x+=Math.random()*2;document.getElementById(`r-${r.id}`).style.left=r.x+'%'}});if(done){clearInterval(window.groupTimer);showGroupResult(racers.sort((a,b)=>b.x-a.x).map(r=>r.n));}},50)}
     function initBombUI(){const w=document.getElementById('wires');let bomb=Math.floor(Math.random()*players.length);players.forEach((p,i)=>{w.innerHTML+=`<button onclick="if(${i}===${bomb}){alert('쾅!');showGroupResult(['${p} (탈락)']);}else{this.style.opacity=0.3;this.innerText='통과'}" style="padding:10px; flex:1 0 40%;">${p}</button>`})}
@@ -264,233 +300,288 @@
     function startTree(){let fallen=0,res=[];let times=players.map(p=>({n:p,t:Math.random()*4000+1000})).sort((a,b)=>a.t-b.t);times.forEach(x=>{setTimeout(()=>{const el=[...document.querySelectorAll('div[id^="f-"]')].find(e=>e.innerText==x.n);if(el){el.style.top='170px';el.style.background='#555';fallen++;res.push(x.n);if(fallen==players.length)showGroupResult(res.reverse())}},x.t)})}
     function initDrawUI(){const d=document.getElementById('draw-box');players.forEach(p=>d.innerHTML+='<div class="card" style="width:60px;height:80px;background:#ba68c8;margin:5px;display:flex;align-items:center;justify-content:center;">?</div>')}
     function startDraw(){const d=document.getElementById('draw-box');d.innerHTML='';[...players].sort(()=>Math.random()-0.5).forEach((p,i)=>{setTimeout(()=>{d.innerHTML+=`<div style="width:60px;height:80px;background:#fff;color:#000;margin:5px;border:1px solid #ba68c8;display:flex;align-items:center;justify-content:center;font-size:12px;">${i+1}등<br>${p}</div>`},i*500)})}
-    
-    // Bridge & Pong (간략)
-    function startBridge(){alert("화면 공유 중인 MC가 진행해주세요!");} 
-    function startPong(){alert("화면 공유 중인 MC가 진행해주세요!");}
-
-    function showGroupResult(list){
-        const r=document.getElementById('g-result'); r.style.display='block';
-        r.innerHTML=`<h3>🏆 결과</h3><div style="font-size:20px; color:gold;">1위: ${list[0]}</div>`+(list[1]?`<div>2위: ${list[1]}</div>`:'');
-    }
+    function startBridge(){alert("MC가 진행해주세요!");} function startPong(){alert("MC가 진행해주세요!");}
+    function showGroupResult(list){const r=document.getElementById('g-result'); r.style.display='block'; r.innerHTML=`<h3>🏆 결과</h3><div style="font-size:20px; color:gold;">1위: ${list[0]}</div>`+(list[1]?`<div>2위: ${list[1]}</div>`:'');}
 
 
-    /* ================= 👤 개인 모드: 스나이퍼 사격 ================= */
+    /* ================= 👤 개인 모드: 사격 ================= */
     let sScore = 0;
-    let sTime = 30;
     let targets = [];
     
     function startShootingGame() {
         showScene('scene-shooting');
         document.getElementById('res-shooting').style.display = 'none';
-        sScore = 0; sTime = 30; targets = [];
+        sScore = 0; 
         document.getElementById('s-score').innerText = 0;
-        document.getElementById('s-time').innerText = 30;
+        let time = 30;
+        document.getElementById('s-time').innerText = time;
         
         const canvas = document.getElementById('canvas-shoot');
-        canvas.width = canvas.offsetWidth;
-        canvas.height = canvas.offsetHeight;
+        canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight;
         const ctx = canvas.getContext('2d');
-        
-        // 클릭 이벤트
+        targets = [];
+
         canvas.onmousedown = canvas.ontouchstart = function(e) {
             e.preventDefault();
             const rect = canvas.getBoundingClientRect();
-            // 터치/클릭 좌표 통일
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
             const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-            const x = clientX - rect.left;
-            const y = clientY - rect.top;
+            const x = clientX - rect.left; const y = clientY - rect.top;
             
-            // 타겟 적중 체크 (뒤에서부터 체크해야 위에 있는게 맞음)
             for (let i = targets.length - 1; i >= 0; i--) {
                 const t = targets[i];
-                const dist = Math.sqrt((x - t.x)**2 + (y - t.y)**2);
-                if (dist < t.r) {
-                    // 명중!
-                    sScore += 10 + Math.floor((30 - t.r)); // 작은거 맞추면 점수 더줌
+                if (Math.sqrt((x - t.x)**2 + (y - t.y)**2) < t.r) {
+                    sScore += 10 + Math.floor((30 - t.r));
                     document.getElementById('s-score').innerText = sScore;
-                    targets.splice(i, 1); // 제거
-                    createTarget(canvas.width, canvas.height); // 바로 새거 생성
-                    return; // 하나만 맞음
-                }
-            }
-        };
-
-        window.isGameRunning = true;
-        
-        // 타이머
-        window.shootTimer = setInterval(() => {
-            sTime--;
-            document.getElementById('s-time').innerText = sTime;
-            if(sTime <= 0) endShootingGame();
-        }, 1000);
-
-        // 게임 루프 (그리기)
-        function loop() {
-            if(!window.isGameRunning) return;
-            ctx.fillStyle = '#000';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            // 타겟 관리
-            if(targets.length < 3) createTarget(canvas.width, canvas.height);
-
-            targets.forEach(t => {
-                t.life--; 
-                // 그리기
-                ctx.beginPath();
-                ctx.arc(t.x, t.y, t.r, 0, Math.PI*2);
-                ctx.fillStyle = t.color;
-                ctx.fill();
-                ctx.strokeStyle = '#fff';
-                ctx.lineWidth = 2;
-                ctx.stroke();
-                
-                // 십자선 무늬
-                ctx.beginPath();
-                ctx.moveTo(t.x - t.r/2, t.y); ctx.lineTo(t.x + t.r/2, t.y);
-                ctx.moveTo(t.x, t.y - t.r/2); ctx.lineTo(t.x, t.y + t.r/2);
-                ctx.stroke();
-            });
-
-            // 수명 다한 타겟 제거 및 리필
-            targets = targets.filter(t => t.life > 0);
-
-            window.gameLoop = requestAnimationFrame(loop);
-        }
-        loop();
-    }
-
-    function createTarget(w, h) {
-        targets.push({
-            x: Math.random() * (w - 60) + 30,
-            y: Math.random() * (h - 60) + 30,
-            r: Math.random() * 20 + 15, // 반지름 15~35
-            life: 100 + Math.random() * 50, // 프레임 수명
-            color: `hsl(${Math.random()*360}, 70%, 50%)`
-        });
-    }
-
-    function endShootingGame() {
-        stopAllGames();
-        document.getElementById('res-shooting').style.display = 'block';
-        document.getElementById('final-s-score').innerText = sScore + "점";
-        
-        let msg = "🔫 사격 훈련병";
-        if(sScore > 500) msg = "🔫 베테랑 스나이퍼";
-        if(sScore > 1000) msg = "🔫 전설의 명사수";
-        document.getElementById('s-rank-msg').innerText = msg;
-    }
-
-
-    /* ================= 👤 개인 모드: 피하기 게임 ================= */
-    let dScore = 0;
-    let playerX = 0;
-    let meteors = [];
-    let moveDir = 0; // -1: left, 1: right
-    
-    function startDodgeGame() {
-        showScene('scene-dodge');
-        document.getElementById('res-dodge').style.display = 'none';
-        dScore = 0;
-        document.getElementById('d-score').innerText = 0;
-        
-        const canvas = document.getElementById('canvas-dodge');
-        canvas.width = canvas.offsetWidth;
-        canvas.height = canvas.offsetHeight;
-        const ctx = canvas.getContext('2d');
-        
-        playerX = canvas.width / 2;
-        meteors = [];
-        window.isGameRunning = true;
-        let frame = 0;
-
-        // 키보드 이벤트
-        window.onkeydown = (e) => {
-            if(e.code === 'ArrowLeft') moveDir = -1;
-            if(e.code === 'ArrowRight') moveDir = 1;
-        };
-        window.onkeyup = (e) => {
-            if(e.code === 'ArrowLeft' || e.code === 'ArrowRight') moveDir = 0;
-        };
-
-        function loop() {
-            if(!window.isGameRunning) return;
-            frame++;
-            dScore++; // 생존 점수
-            document.getElementById('d-score').innerText = dScore;
-
-            // 배경
-            ctx.fillStyle = '#111';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            // 플레이어 이동
-            playerX += moveDir * 5;
-            if(playerX < 15) playerX = 15;
-            if(playerX > canvas.width - 15) playerX = canvas.width - 15;
-
-            // 플레이어 그리기 (삼각형)
-            ctx.fillStyle = '#00e676';
-            ctx.beginPath();
-            ctx.moveTo(playerX, canvas.height - 40);
-            ctx.lineTo(playerX - 15, canvas.height - 10);
-            ctx.lineTo(playerX + 15, canvas.height - 10);
-            ctx.fill();
-
-            // 장애물 생성 (점점 어렵게)
-            let frequency = 30; // 30프레임마다 생성 (초기)
-            if(dScore > 1000) frequency = 20;
-            if(dScore > 2000) frequency = 10;
-            
-            if(frame % frequency === 0) {
-                meteors.push({
-                    x: Math.random() * canvas.width,
-                    y: -20,
-                    size: Math.random() * 10 + 10,
-                    speed: Math.random() * 3 + 2 + (dScore/2000) // 점점 빨라짐
-                });
-            }
-
-            // 장애물 이동 및 충돌
-            for(let i=0; i<meteors.length; i++) {
-                let m = meteors[i];
-                m.y += m.speed;
-
-                // 그리기
-                ctx.fillStyle = '#ff5252';
-                ctx.beginPath();
-                ctx.arc(m.x, m.y, m.size, 0, Math.PI*2);
-                ctx.fill();
-
-                // 충돌 체크 (간단한 원-점 거리 체크)
-                // 플레이어 중심부와 거리
-                if(Math.abs(m.x - playerX) < (m.size + 10) && 
-                   Math.abs(m.y - (canvas.height-20)) < (m.size + 10)) {
-                    endDodgeGame();
+                    targets.splice(i, 1); createTarget(canvas.width, canvas.height);
                     return;
                 }
             }
-            
-            // 화면 밖 나간 장애물 제거
-            meteors = meteors.filter(m => m.y < canvas.height + 50);
+        };
 
+        window.isGameRunning = true;
+        window.gameTimer = setInterval(() => { time--; document.getElementById('s-time').innerText = time; if(time <= 0) endShooting(); }, 1000);
+
+        function loop() {
+            if(!window.isGameRunning) return;
+            ctx.fillStyle = '#000'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+            if(targets.length < 3) createTarget(canvas.width, canvas.height);
+            targets.forEach(t => {
+                t.life--; ctx.beginPath(); ctx.arc(t.x, t.y, t.r, 0, Math.PI*2);
+                ctx.fillStyle = t.color; ctx.fill(); ctx.strokeStyle='#fff'; ctx.stroke();
+            });
+            targets = targets.filter(t => t.life > 0);
             window.gameLoop = requestAnimationFrame(loop);
         }
         loop();
     }
-    
-    // 모바일 터치 컨트롤
-    function moveDodge(dir) {
-        if(dir === 'left') moveDir = -1;
-        if(dir === 'right') moveDir = 1;
-    }
-    function stopDodge() { moveDir = 0; }
+    function createTarget(w, h) { targets.push({ x: Math.random()*(w-60)+30, y: Math.random()*(h-60)+30, r: Math.random()*20+15, life: 100, color: `hsl(${Math.random()*360},70%,50%)` }); }
+    function endShooting() { stopAllGames(); document.getElementById('res-shooting').style.display = 'block'; document.getElementById('final-s-score').innerText = sScore + "점"; }
 
-    function endDodgeGame() {
-        stopAllGames();
-        document.getElementById('res-dodge').style.display = 'block';
-        document.getElementById('final-d-score').innerText = dScore + "점";
+
+    /* ================= 👤 개인 모드: 똥피하기 ================= */
+    let dScore=0, playerX=0, moveDir=0, meteors=[];
+    function startDodgeGame() {
+        showScene('scene-dodge');
+        document.getElementById('res-dodge').style.display = 'none';
+        dScore=0; document.getElementById('d-score').innerText = 0;
+        const canvas = document.getElementById('canvas-dodge');
+        canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight;
+        const ctx = canvas.getContext('2d');
+        playerX = canvas.width / 2; meteors = [];
+        window.isGameRunning = true;
+        
+        function loop() {
+            if(!window.isGameRunning) return;
+            dScore++; document.getElementById('d-score').innerText = dScore;
+            ctx.fillStyle = '#111'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+            playerX += moveDir * 5; 
+            if(playerX < 15) playerX = 15; if(playerX > canvas.width - 15) playerX = canvas.width - 15;
+            
+            ctx.fillStyle = '#00e676'; ctx.beginPath();
+            ctx.moveTo(playerX, canvas.height-40); ctx.lineTo(playerX-15, canvas.height-10); ctx.lineTo(playerX+15, canvas.height-10); ctx.fill();
+
+            if(dScore % 20 === 0) meteors.push({x:Math.random()*canvas.width, y:-20, r:Math.random()*10+5, s:Math.random()*3+3+(dScore/2000)});
+            
+            meteors.forEach(m => {
+                m.y += m.s; ctx.fillStyle = '#ff5252'; ctx.beginPath(); ctx.arc(m.x, m.y, m.r, 0, Math.PI*2); ctx.fill();
+                if(Math.abs(m.x-playerX) < (m.r+10) && Math.abs(m.y-(canvas.height-20)) < (m.r+10)) endDodge();
+            });
+            window.gameLoop = requestAnimationFrame(loop);
+        }
+        loop();
     }
+    function moveDodge(dir) { moveDir = dir==='left' ? -1 : 1; } function stopDodge() { moveDir = 0; }
+    function endDodge() { stopAllGames(); document.getElementById('res-dodge').style.display = 'block'; document.getElementById('final-d-score').innerText = dScore + "점"; }
+
+
+    /* ================= 👤 개인 모드: 승부차기 (NEW) ================= */
+    let pkScore = 0;
+    let gkX = 0, gkDir = 1;
+    let soccerBall = null; // {x, y, vx, vy}
+    
+    function startSoccerGame() {
+        showScene('scene-soccer');
+        document.getElementById('res-soccer').style.display = 'none';
+        pkScore = 0; document.getElementById('pk-score').innerText = 0;
+        let time = 30; document.getElementById('pk-time').innerText = time;
+
+        const canvas = document.getElementById('canvas-soccer');
+        canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight;
+        const ctx = canvas.getContext('2d');
+        const goalW = 160; const goalH = 10;
+        
+        gkX = canvas.width/2; 
+        soccerBall = { x: canvas.width/2, y: canvas.height-30, active: false };
+        window.isGameRunning = true;
+
+        // 터치로 슛
+        canvas.onmousedown = canvas.ontouchstart = function(e) {
+            e.preventDefault();
+            if(!window.isGameRunning || soccerBall.active) return;
+            
+            const rect = canvas.getBoundingClientRect();
+            const cx = e.touches ? e.touches[0].clientX : e.clientX;
+            const cy = e.touches ? e.touches[0].clientY : e.clientY;
+            const touchX = cx - rect.left;
+            const touchY = cy - rect.top;
+
+            // 벡터 계산
+            const dx = touchX - soccerBall.x;
+            const dy = touchY - soccerBall.y;
+            const dist = Math.sqrt(dx*dx + dy*dy);
+            const speed = 15;
+            
+            soccerBall.vx = (dx / dist) * speed;
+            soccerBall.vy = (dy / dist) * speed;
+            soccerBall.active = true;
+        };
+
+        window.gameTimer = setInterval(() => { time--; document.getElementById('pk-time').innerText = time; if(time <= 0) endSoccer(); }, 1000);
+
+        function loop() {
+            if(!window.isGameRunning) return;
+            // 배경
+            ctx.fillStyle = '#4caf50'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+            // 골대
+            ctx.fillStyle = '#fff'; ctx.fillRect(canvas.width/2 - goalW/2, 20, goalW, goalH);
+            
+            // 키퍼 이동
+            gkX += 3 * gkDir;
+            if(gkX < canvas.width/2 - goalW/2 + 20 || gkX > canvas.width/2 + goalW/2 - 20) gkDir *= -1;
+            
+            // 키퍼 그리기
+            ctx.fillStyle = '#ff9800'; ctx.beginPath(); ctx.arc(gkX, 40, 20, 0, Math.PI*2); ctx.fill(); // 머리
+            ctx.fillRect(gkX-20, 40, 40, 20); // 몸통
+
+            // 공 처리
+            if(soccerBall.active) {
+                soccerBall.x += soccerBall.vx;
+                soccerBall.y += soccerBall.vy;
+                soccerBall.r = 10;
+
+                // 골라인 통과 체크
+                if(soccerBall.y < 30) {
+                    // 키퍼 충돌 체크
+                    if(Math.abs(soccerBall.x - gkX) < 30) {
+                        // 막힘
+                        resetBall();
+                    } else if(soccerBall.x > canvas.width/2 - goalW/2 && soccerBall.x < canvas.width/2 + goalW/2) {
+                        // 골!
+                        pkScore++; document.getElementById('pk-score').innerText = pkScore;
+                        resetBall();
+                    } else {
+                        // 빗나감
+                        resetBall();
+                    }
+                }
+                // 화면 밖
+                if(soccerBall.y < 0 || soccerBall.x < 0 || soccerBall.x > canvas.width) resetBall();
+            }
+
+            // 공 그리기
+            ctx.fillStyle = '#fff'; ctx.beginPath(); 
+            ctx.arc(soccerBall.x, soccerBall.y, 10, 0, Math.PI*2); ctx.fill();
+            ctx.strokeStyle='#000'; ctx.stroke();
+
+            window.gameLoop = requestAnimationFrame(loop);
+        }
+        loop();
+
+        function resetBall() {
+            soccerBall = { x: canvas.width/2, y: canvas.height-30, active: false };
+        }
+    }
+    function endSoccer() { stopAllGames(); document.getElementById('res-soccer').style.display = 'block'; document.getElementById('final-pk-score').innerText = pkScore + "골"; }
+
+
+    /* ================= 👤 개인 모드: 농구 (NEW) ================= */
+    let bkScore = 0;
+    let hoopX = 0, hoopDir = 1;
+    let ball = null; // {x, y, vx, vy}
+
+    function startBasketGame() {
+        showScene('scene-basket');
+        document.getElementById('res-basket').style.display = 'none';
+        bkScore = 0; document.getElementById('bk-score').innerText = 0;
+        let time = 30; document.getElementById('bk-time').innerText = time;
+
+        const canvas = document.getElementById('canvas-basket');
+        canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight;
+        const ctx = canvas.getContext('2d');
+        
+        hoopX = canvas.width / 2;
+        ball = { x: 50, y: canvas.height-50, active: false };
+        window.isGameRunning = true;
+
+        canvas.onmousedown = canvas.ontouchstart = function(e) {
+            e.preventDefault();
+            if(!window.isGameRunning || ball.active) return;
+            
+            const rect = canvas.getBoundingClientRect();
+            const cx = e.touches ? e.touches[0].clientX : e.clientX;
+            const cy = e.touches ? e.touches[0].clientY : e.clientY;
+            
+            // 공 위치에서 터치 위치로의 벡터로 발사 (포물선)
+            const tx = cx - rect.left;
+            const ty = cy - rect.top;
+            
+            const dx = tx - ball.x;
+            const dy = ty - ball.y;
+            
+            ball.vx = dx * 0.15; // 파워 조절
+            ball.vy = dy * 0.15;
+            ball.active = true;
+        };
+
+        window.gameTimer = setInterval(() => { time--; document.getElementById('bk-time').innerText = time; if(time <= 0) endBasket(); }, 1000);
+
+        function loop() {
+            if(!window.isGameRunning) return;
+            ctx.fillStyle = '#37474f'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 골대 이동
+            hoopX += 2 * hoopDir;
+            if(hoopX < 50 || hoopX > canvas.width - 50) hoopDir *= -1;
+
+            // 골대 그리기
+            ctx.fillStyle = '#ef5350'; ctx.fillRect(hoopX-25, 100, 50, 5); // 림
+            ctx.strokeStyle = '#fff'; ctx.beginPath(); ctx.moveTo(hoopX-25, 100); 
+            ctx.lineTo(hoopX-15, 150); ctx.lineTo(hoopX+15, 150); ctx.lineTo(hoopX+25, 100); ctx.stroke(); // 그물
+
+            // 공 물리
+            if(ball.active) {
+                ball.x += ball.vx;
+                ball.y += ball.vy;
+                ball.vy += 0.5; // 중력
+
+                // 골인 체크 (림 근처에서 내려올 때)
+                if(ball.vy > 0 && Math.abs(ball.y - 100) < 10 && Math.abs(ball.x - hoopX) < 20) {
+                    bkScore += 2; document.getElementById('bk-score').innerText = bkScore;
+                    // 골 이펙트 (간단히)
+                    ctx.fillStyle = 'gold'; ctx.font = '20px Arial'; ctx.fillText("+2", hoopX, 80);
+                    resetBall();
+                }
+
+                // 바닥이나 벽 닿으면 리셋
+                if(ball.y > canvas.height || ball.x > canvas.width || ball.x < 0) resetBall();
+            } else {
+                // 대기 중인 공은 따라다님 (슈팅 위치 랜덤화)
+                // ball.x = ... 
+            }
+
+            // 공 그리기
+            ctx.fillStyle = '#ff9800'; ctx.beginPath(); ctx.arc(ball.x, ball.y, 12, 0, Math.PI*2); ctx.fill();
+
+            window.gameLoop = requestAnimationFrame(loop);
+        }
+        loop();
+
+        function resetBall() {
+            ball = { x: Math.random() * (canvas.width-40) + 20, y: canvas.height-50, active: false, vx:0, vy:0 };
+        }
+    }
+    function endBasket() { stopAllGames(); document.getElementById('res-basket').style.display = 'block'; document.getElementById('final-bk-score').innerText = bkScore + "점"; }
 
 </script>
 </body>
