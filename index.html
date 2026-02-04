@@ -2,523 +2,496 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>사내 미니게임 천국 PRO</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>사내 미니게임 LIVE (통합판)</title>
     <style>
-        /* --- 공통 스타일 --- */
+        /* --- 공통 스타일 (다크모드) --- */
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #202124; color: #fff; /* 다크 모드 기반 */
-            margin: 0; padding: 10px; text-align: center;
-            user-select: none;
+            font-family: 'Suit', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #121212; color: #fff;
+            margin: 0; padding: 0; text-align: center;
+            user-select: none; -webkit-user-select: none;
+            touch-action: manipulation; /* 줌 방지 */
+            overflow-x: hidden;
         }
         .container {
-            background-color: #303134; padding: 20px; border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5); max-width: 600px; margin: 0 auto;
+            max-width: 600px; margin: 0 auto; min-height: 100vh;
+            background: #1e1e1e; padding: 20px; box-sizing: border-box;
+            box-shadow: 0 0 20px rgba(0,0,0,0.8);
         }
-        h2 { color: #8ab4f8; margin: 0 0 10px 0; }
-        .desc { font-size: 13px; color: #9aa0a6; margin-bottom: 20px; }
-        
-        /* 입력창 스타일 */
-        .input-group { margin-bottom: 15px; text-align: left; background: #3c4043; padding: 10px; border-radius: 8px;}
-        .input-group label { display: block; font-size: 12px; color: #8ab4f8; margin-bottom: 5px; }
-        input[type="text"] {
-            width: 95%; padding: 10px; background: #202124; border: 1px solid #5f6368; 
-            border-radius: 5px; color: #fff; font-size: 16px;
-        }
+        h2 { color: #bb86fc; font-size: 26px; margin: 10px 0; text-shadow: 0 0 10px rgba(187, 134, 252, 0.5); }
+        .sub-title { color: #03dac6; font-size: 14px; margin-bottom: 20px; letter-spacing: 1px; }
 
         /* 버튼 스타일 */
-        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .btn {
-            background-color: #8ab4f8; color: #202124; border: none; padding: 15px 0;
-            font-size: 15px; border-radius: 8px; cursor: pointer; font-weight: bold;
-            transition: transform 0.1s;
+            border: none; border-radius: 12px; padding: 15px 0; width: 100%;
+            font-size: 16px; font-weight: bold; color: #000; cursor: pointer;
+            transition: transform 0.1s; margin-bottom: 10px;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.3);
         }
-        .btn:active { transform: scale(0.95); }
-        .btn:disabled { background-color: #5f6368; color: #aaa; cursor: not-allowed; }
-        .btn-full { grid-column: span 2; background-color: #fbbc04; } /* 노란색 */
-        .btn-red { background-color: #f28b82; } /* 빨간색 */
-        .btn-green { background-color: #81c995; } /* 초록색 */
-        .btn-home { background-color: #5f6368; color: #fff; width: 100%; margin-top: 20px; padding: 10px; }
+        .btn:active { transform: translateY(4px); box-shadow: none; }
+        
+        .btn-main { background: linear-gradient(45deg, #6200ea, #bb86fc); color: #fff; font-size: 20px; padding: 25px 0; margin-bottom: 20px; }
+        .btn-personal { background: linear-gradient(45deg, #00c853, #69f0ae); color: #000; font-size: 20px; padding: 25px 0; margin-bottom: 20px; }
+        
+        .btn-home { background: #444; color: #fff; margin-top: 20px; }
+        .btn-retry { background: #ffeb3b; color: #000; margin-top: 10px; }
+
+        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .c-race { background: #ff7597; } .c-bomb { background: #ffb74d; }
+        .c-tree { background: #aed581; } .c-bridge { background: #4fc3f7; }
+        .c-pong { background: #ffeb3b; grid-column: span 2; }
+        .c-draw { background: #ba68c8; grid-column: span 2; }
 
         /* 화면 전환 */
         .scene { display: none; animation: fadeIn 0.3s; }
         .active { display: block; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* 결과창 */
-        .result-box { 
-            margin-top: 20px; padding: 15px; background: #3c4043; 
-            border-radius: 10px; text-align: left; border: 1px solid #5f6368;
-        }
-        .rank-item { padding: 8px; border-bottom: 1px solid #5f6368; font-size: 16px;}
-        .rank-1 { color: #fbbc04; font-weight: bold; font-size: 20px; border-bottom: 2px solid #fbbc04; }
-
-        /* --- 🏃 게임 1: 달리기 --- */
-        #track { width: 100%; border: 2px solid #5f6368; background: #202124; position: relative; border-radius: 10px; overflow: hidden; margin-top:10px; padding-bottom: 10px;}
-        .lane { height: 45px; border-bottom: 1px dashed #3c4043; position: relative; margin-top: 5px;}
-        .animal { position: absolute; left: 0; font-size: 28px; line-height: 45px; transition: left 0.2s linear; }
-        .finish-line { position: absolute; right: 15px; top: 0; bottom: 0; width: 2px; background: #f28b82; z-index: 0;}
-        .stumble { transform: rotate(-90deg); transition: transform 0.2s; } /* 넘어짐 효과 */
-
-        /* --- 🎲 게임 2: 제비뽑기 --- */
-        .card-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 20px; }
-        .card {
-            width: 70px; height: 90px; background: #8ab4f8; color: #202124;
-            border-radius: 5px; display: flex; align-items: center; justify-content: center;
-            font-weight: bold; font-size: 20px; cursor: pointer;
-        }
-        .card.flipped { background: #fff; transform: rotateY(180deg); transition: 0.5s; }
+        /* --- 📋 그룹 모드 스타일 --- */
+        .roster-box { background: #2c2c2c; padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: left; }
+        textarea { width: 100%; height: 60px; background: #333; color: white; border: 1px solid #555; border-radius: 8px; box-sizing: border-box; }
+        .player-tag { background: #3700b3; color: white; padding: 4px 10px; border-radius: 15px; font-size: 12px; margin-right: 5px; display: inline-block; margin-top:5px; }
         
-        /* --- 🌳 게임 3: 버티는 열매 --- */
-        #tree-area { height: 300px; position: relative; background: #e8f5e9; border-radius: 15px; overflow: hidden; margin-top: 10px; }
-        #tree-leaves {
-            width: 260px; height: 180px; background: #388e3c; border-radius: 50% 50% 40% 40%;
-            position: absolute; top: 20px; left: 50%; transform: translateX(-50%); z-index: 1; transform-origin: top center;
+        /* 그룹 게임 요소 (간략화) */
+        #track { background: #333; border-radius: 10px; padding: 10px 0; margin-top: 15px; }
+        .lane { height: 40px; border-bottom: 1px dashed #555; position: relative; }
+        .animal { position: absolute; left: 0; font-size: 24px; line-height: 40px; transition: left 0.1s linear; }
+        
+        /* --- 👤 개인 모드 스타일 --- */
+        .game-canvas-box {
+            position: relative; width: 100%; max-width: 400px; height: 400px; margin: 0 auto;
+            background: #000; border: 2px solid #555; border-radius: 10px; overflow: hidden;
+            touch-action: none;
         }
-        #tree-trunk { width: 30px; height: 120px; background: #5d4037; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); }
-        .shaking { animation: heavyShake 0.2s infinite; }
-        @keyframes heavyShake {
-            0% { transform: translateX(-50%) rotate(2deg); }
-            50% { transform: translateX(-50%) rotate(-2deg); }
-            100% { transform: translateX(-50%) rotate(2deg); }
+        canvas { display: block; width: 100%; height: 100%; }
+        
+        .score-board {
+            position: absolute; top: 10px; left: 10px; font-size: 20px; font-weight: bold; color: #fff;
+            text-shadow: 2px 2px 0 #000; z-index: 10; pointer-events: none;
         }
-        .fruit {
-            position: absolute; width: 40px; height: 40px; background: #ff7043; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center; font-size: 11px; color: white; font-weight: bold;
-            z-index: 2; transition: top 0.3s ease-in; box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+        .time-board {
+            position: absolute; top: 10px; right: 10px; font-size: 20px; font-weight: bold; color: #ff5252;
+            text-shadow: 2px 2px 0 #000; z-index: 10; pointer-events: none;
         }
-        .dangling { animation: dangle 1s infinite; transform-origin: top center; }
-        @keyframes dangle { 0%{transform: rotate(5deg);} 50%{transform: rotate(-5deg);} 100%{transform: rotate(5deg);} }
 
-        /* --- 💣 게임 4: 폭탄 해체 --- */
-        #bomb-area { text-align: center; margin-top: 20px; }
-        #bomb-display { font-size: 60px; margin: 20px 0; }
-        .wire-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
-        .wire-btn { 
-            padding: 10px 15px; border-radius: 5px; border: none; font-weight: bold; cursor: pointer; 
-            background: #5f6368; color: white; flex: 1 0 40%; 
+        /* 컨트롤러 (모바일용) */
+        .mobile-controls {
+            display: flex; justify-content: space-between; margin-top: 10px; gap: 10px;
         }
-        .wire-safe { background: #81c995 !important; opacity: 0.5; }
-        .wire-boom { background: #f28b82 !important; animation: shake 0.5s; }
+        .control-btn {
+            flex: 1; padding: 20px; background: #444; color: #fff; border-radius: 10px;
+            font-size: 24px; border: none; touch-action: manipulation;
+        }
+        .control-btn:active { background: #666; }
 
-        /* --- 🌉 게임 5: 유리다리 --- */
-        #bridge-area { 
-            display: flex; flex-direction: column-reverse; align-items: center; 
-            background: #000; padding: 20px; border-radius: 10px; height: 400px; overflow-y: auto;
-            perspective: 600px;
+        /* 결과창 (캡처용) */
+        .capture-card {
+            background: #fff; color: #000; padding: 20px; border-radius: 15px; margin-top: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5); text-align: center;
         }
-        .bridge-step { 
-            display: flex; justify-content: space-between; width: 200px; margin-bottom: 15px; 
-            transform: rotateX(20deg);
-        }
-        .glass { 
-            width: 90px; height: 60px; background: rgba(138, 180, 248, 0.3); 
-            border: 2px solid #8ab4f8; display: flex; align-items: center; justify-content: center;
-            cursor: pointer; color: #fff; font-size: 12px; transition: 0.3s;
-        }
-        .glass-break { background: none; border: none; font-size: 0; background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><path d="M0 0 L10 10 M10 0 L0 10" stroke="white"/></svg>'); }
-        .player-token { font-size: 24px; position: absolute; transition: all 0.5s; z-index: 10; text-shadow: 0 0 5px #000;}
+        .capture-title { color: #555; font-size: 14px; margin-bottom: 5px; }
+        .capture-score { font-size: 40px; font-weight: 900; color: #6200ea; margin: 10px 0; }
+        .capture-rank { font-size: 16px; font-weight: bold; color: #ff5252; }
 
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <div id="scene-menu" class="scene active">
-            <h2>🎮 사내 미니게임 천국 PRO</h2>
-            <p class="desc">더 길고, 더 쫄깃하게!</p>
-            
-            <div class="input-group">
-                <label>📌 방 코드 (동기화용)</label>
-                <input type="text" id="room-code" placeholder="예: 점심내기 (비우면 랜덤)">
-            </div>
-            <div class="input-group">
-                <label>👥 참가자 (이름을 콤마로 구분)</label>
-                <input type="text" id="global-names" value="김대리,이과장,박사원,최팀장,정인턴">
-            </div>
+<div class="container">
 
-            <div class="btn-grid">
-                <button class="btn" onclick="goToGame('race')">🏃 달리기 (30초)</button>
-                <button class="btn btn-red" onclick="goToGame('bomb')">💣 폭탄 해체</button>
-                <button class="btn btn-green" onclick="goToGame('fruit')">🌳 버티는 열매</button>
-                <button class="btn" onclick="goToGame('bridge')">🌉 유리다리</button>
-                <button class="btn btn-full" onclick="goToGame('draw')">🎲 빠른 제비뽑기</button>
-            </div>
-        </div>
-
-        <div id="scene-race" class="scene">
-            <h3>🏃 대역전 레이스</h3>
-            <p class="desc">넘어지면 끝장입니다.</p>
-            <div id="track"></div>
-            <br>
-            <button class="btn btn-full" id="btn-race-start" onclick="startRace()">준비... 땅!</button>
-            <div id="race-result" class="result-box" style="display:none;"></div>
-            <button class="btn btn-home" onclick="goHome()">메인으로</button>
-        </div>
-
-        <div id="scene-bomb" class="scene">
-            <h3>💣 폭탄 해체반</h3>
-            <p class="desc">가위바위보 순서대로 선을 자르세요.</p>
-            <div id="bomb-display">💣</div>
-            <div id="wire-box" class="wire-container"></div>
-            <div id="bomb-status" style="margin:10px; height: 20px; color: #f28b82;"></div>
-            <div id="bomb-result" class="result-box" style="display:none;"></div>
-            <button class="btn btn-home" onclick="goHome()">메인으로</button>
-        </div>
-
-        <div id="scene-fruit" class="scene">
-            <h3>🌳 끈질긴 녀석들</h3>
-            <p class="desc">마지막까지 매달린 사람이 승리!</p>
-            <div id="tree-area">
-                <div id="tree-leaves"></div>
-                <div id="tree-trunk"></div>
-            </div>
-            <br>
-            <button class="btn btn-green" id="btn-fruit-start" onclick="startFruit()">나무 흔들기!</button>
-            <div id="fruit-result" class="result-box" style="display:none;"></div>
-            <button class="btn btn-home" onclick="goHome()">메인으로</button>
-        </div>
-
-        <div id="scene-bridge" class="scene">
-            <h3>🌉 운명의 유리다리</h3>
-            <p class="desc">누가 가장 멀리 갈까요?</p>
-            <div id="bridge-area"></div>
-            <br>
-            <button class="btn" id="btn-bridge-start" onclick="startBridge()">게임 시작</button>
-            <div id="bridge-result" class="result-box" style="display:none;"></div>
-            <button class="btn btn-home" onclick="goHome()">메인으로</button>
-        </div>
-
-        <div id="scene-draw" class="scene">
-            <h3>🎲 스피드 제비뽑기</h3>
-            <div id="draw-area" class="card-grid"></div>
-            <br>
-            <button class="btn btn-full" id="btn-draw-start" onclick="startDraw()">오픈!</button>
-            <div id="draw-result" class="result-box" style="display:none;"></div>
-            <button class="btn btn-home" onclick="goHome()">메인으로</button>
-        </div>
+    <div id="scene-intro" class="scene active">
+        <h1 style="font-size: 40px; margin-bottom: 30px;">🎮 GAME ZONE</h1>
+        <button class="btn btn-main" onclick="goLobby()">👥 다같이 하기<br><span style="font-size:14px">(방장 진행 / 단체게임)</span></button>
+        <button class="btn btn-personal" onclick="goPersonalMenu()">👤 혼자 하기<br><span style="font-size:14px">(개인 기록 / 캡처 공유)</span></button>
     </div>
 
-    <script>
-        // --- 랜덤 시드 로직 (동기화 핵심) ---
-        let seedValue = 0;
-        function setSeed(str) {
-            let h = 2166136261 >>> 0;
-            for (let i = 0; i < str.length; i++) h = Math.imul(h ^ str.charCodeAt(i), 16777619);
-            seedValue = h >>> 0;
-        }
-        function myRandom() {
-            if (!document.getElementById('room-code').value.trim()) return Math.random();
-            seedValue = (Math.imul(1664525, seedValue) + 1013904223) | 0;
-            return ((seedValue >>> 0) / 4294967296);
-        }
-        function shuffle(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(myRandom() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
-            return array;
-        }
-
-        // --- 공통 변수 ---
-        let participants = [];
-        const animals = ['🐶','🐱','🐹','🦊','🐻','🐼','🐸','🐰','🐯','🦁'];
+    <div id="scene-lobby" class="scene">
+        <h2>👥 단체 게임 로비</h2>
+        <div class="sub-title">HOST 화면 공유 필수</div>
         
-        function goHome() {
-            document.querySelectorAll('.scene').forEach(el => el.classList.remove('active'));
-            document.getElementById('scene-menu').classList.add('active');
-        }
+        <div class="roster-box">
+            <div style="color:#aaa; font-size:12px;">참가자 명단 (<span id="count">0</span>명)</div>
+            <textarea id="name-input" placeholder="이름 입력 (콤마로 구분)"></textarea>
+            <button class="btn" style="background:#03dac6; margin-top:5px;" onclick="updateRoster()">명단 등록</button>
+            <div id="player-list-display"></div>
+        </div>
 
-        function goToGame(gameType) {
-            const inputName = document.getElementById('global-names').value;
-            const inputCode = document.getElementById('room-code').value;
+        <div class="btn-grid">
+            <button class="btn c-race" onclick="goGroupGame('race')">🏃 달리기</button>
+            <button class="btn c-bomb" onclick="goGroupGame('bomb')">💣 폭탄제거</button>
+            <button class="btn c-tree" onclick="goGroupGame('tree')">🌳 버티기</button>
+            <button class="btn c-bridge" onclick="goGroupGame('bridge')">🌉 유리다리</button>
+            <button class="btn c-pong" onclick="goGroupGame('pong')">🏓 핑퐁</button>
+            <button class="btn c-draw" onclick="goGroupGame('draw')">🎲 뽑기</button>
+        </div>
+        <button class="btn btn-home" onclick="goHome()">⬅ 처음으로</button>
+    </div>
+
+    <div id="scene-group-game" class="scene">
+        <h3 id="g-title">게임 제목</h3>
+        <div id="g-content"></div> <button class="btn" id="g-start-btn" style="background:#fff; margin-top:10px;" onclick="runGroupGame()">시작하기</button>
+        <div id="g-result" class="capture-card" style="display:none; background:#222; color:#fff;"></div>
+        <button class="btn btn-home" onclick="goLobby()">목록으로</button>
+    </div>
+
+
+    <div id="scene-personal-menu" class="scene">
+        <h2>👤 개인 기록 도전</h2>
+        <p style="color:#aaa; font-size:13px;">최고 점수를 캡처해서 공유하세요!</p>
+        
+        <button class="btn" style="background:#ff5252; color:#fff; padding: 25px 0;" onclick="startShootingGame()">
+            🔫 스나이퍼 사격<br><span style="font-size:12px; font-weight:normal;">30초 동안 타겟 맞추기</span>
+        </button>
+        
+        <button class="btn" style="background:#448aff; color:#fff; padding: 25px 0;" onclick="startDodgeGame()">
+            ☄️ 똥 피하기 (키보드/터치)<br><span style="font-size:12px; font-weight:normal;">하늘에서 떨어지는 장애물 피하기</span>
+        </button>
+
+        <button class="btn btn-home" onclick="goHome()">⬅ 처음으로</button>
+    </div>
+
+    <div id="scene-shooting" class="scene">
+        <h3>🔫 스나이퍼 사격</h3>
+        <p style="font-size:12px; color:#aaa;">나타나는 타겟을 빠르게 클릭하세요!</p>
+        <div class="game-canvas-box">
+            <canvas id="canvas-shoot"></canvas>
+            <div class="score-board">SCORE: <span id="s-score">0</span></div>
+            <div class="time-board">TIME: <span id="s-time">30</span></div>
+        </div>
+        <div id="res-shooting" class="capture-card" style="display:none">
+            <div class="capture-title">🔫 스나이퍼 사격 결과</div>
+            <div class="capture-score" id="final-s-score">0점</div>
+            <div class="capture-rank" id="s-rank-msg"></div>
+            <div style="font-size:11px; color:#888; margin-top:5px;">이 화면을 캡처해서 공유하세요!</div>
+        </div>
+        <button class="btn btn-retry" onclick="startShootingGame()">🔄 다시 하기</button>
+        <button class="btn btn-home" onclick="goPersonalMenu()">메뉴로 나가기</button>
+    </div>
+
+    <div id="scene-dodge" class="scene">
+        <h3>☄️ 장애물 피하기</h3>
+        <p style="font-size:12px; color:#aaa;">PC: 방향키(← →) / 모바일: 하단 버튼</p>
+        <div class="game-canvas-box">
+            <canvas id="canvas-dodge"></canvas>
+            <div class="score-board">SCORE: <span id="d-score">0</span></div>
+        </div>
+        
+        <div class="mobile-controls">
+            <button class="control-btn" ontouchstart="moveDodge('left')" onmousedown="moveDodge('left')" ontouchend="stopDodge()" onmouseup="stopDodge()">⬅</button>
+            <button class="control-btn" ontouchstart="moveDodge('right')" onmousedown="moveDodge('right')" ontouchend="stopDodge()" onmouseup="stopDodge()">➡</button>
+        </div>
+
+        <div id="res-dodge" class="capture-card" style="display:none">
+            <div class="capture-title">☄️ 생존 기록</div>
+            <div class="capture-score" id="final-d-score">0점</div>
+            <div class="capture-rank">당신의 순발력은?</div>
+            <div style="font-size:11px; color:#888; margin-top:5px;">이 화면을 캡처해서 공유하세요!</div>
+        </div>
+        <button class="btn btn-retry" onclick="startDodgeGame()">🔄 다시 하기</button>
+        <button class="btn btn-home" onclick="goPersonalMenu()">메뉴로 나가기</button>
+    </div>
+
+</div>
+
+<script>
+    /* ================= 공통 로직 ================= */
+    function goHome() { showScene('scene-intro'); stopAllGames(); }
+    function goLobby() { showScene('scene-lobby'); stopAllGames(); }
+    function goPersonalMenu() { showScene('scene-personal-menu'); stopAllGames(); }
+    
+    function showScene(id) {
+        document.querySelectorAll('.scene').forEach(el => el.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    }
+    
+    function stopAllGames() {
+        // 그룹 게임 타이머 정리
+        if(window.groupTimer) clearInterval(window.groupTimer);
+        // 개인 게임 루프 정리
+        if(window.shootTimer) clearInterval(window.shootTimer);
+        if(window.gameLoop) cancelAnimationFrame(window.gameLoop);
+        window.isGameRunning = false;
+    }
+
+    /* ================= 그룹 모드 로직 (요약) ================= */
+    let players = [];
+    let curGroupGame = '';
+    const animals = ['🐶','🐱','🐹','🦊','🐻','🐼','🐸','🐰'];
+
+    function updateRoster() {
+        const val = document.getElementById('name-input').value;
+        players = val.split(/[,|\n]+/).map(n=>n.trim()).filter(n=>n);
+        const div = document.getElementById('player-list-display');
+        div.innerHTML = '';
+        players.forEach(p => div.innerHTML += `<span class="player-tag">${p}</span>`);
+        document.getElementById('count').innerText = players.length;
+        if(players.length>0) alert("등록 완료!");
+    }
+
+    function goGroupGame(type) {
+        if(players.length < 2) return alert("참가자 명단을 먼저 등록해주세요!");
+        curGroupGame = type;
+        showScene('scene-group-game');
+        document.getElementById('g-result').style.display='none';
+        const content = document.getElementById('g-content');
+        const title = document.getElementById('g-title');
+        const btn = document.getElementById('g-start-btn');
+        btn.style.display = 'block';
+        content.innerHTML = '';
+
+        if(type==='race') { title.innerText='🏃 달리기'; content.innerHTML='<div id="track" style="background:#333; padding:10px;"></div>'; initRaceUI(); }
+        else if(type==='bomb') { title.innerText='💣 폭탄 해체'; content.innerHTML='<div style="font-size:50px;">💣</div><div id="wires" style="display:flex; flex-wrap:wrap; gap:5px; justify-content:center; margin-top:20px;"></div>'; initBombUI(); }
+        else if(type==='tree') { title.innerText='🌳 버티기'; content.innerHTML='<div style="height:200px; background:#2e7d32; position:relative; border-radius:10px;" id="tree-bg"></div>'; initTreeUI(); }
+        else if(type==='bridge') { title.innerText='🌉 유리다리'; content.innerHTML='<div id="bridge-box" style="height:300px; background:#000; overflow-y:auto; padding:10px;"></div>'; document.getElementById('bridge-box').innerHTML='<div style="color:#aaa">시작 버튼을 누르면 생성됩니다</div>'; btn.onclick=startBridge; }
+        else if(type==='pong') { title.innerText='🏓 핑퐁'; content.innerHTML='<canvas id="pong-c" width="300" height="300" style="background:#000; border:1px solid #ffeb3b;"></canvas>'; btn.onclick=startPong; }
+        else if(type==='draw') { title.innerText='🎲 제비뽑기'; content.innerHTML='<div id="draw-box" style="display:flex; flex-wrap:wrap; justify-content:center; gap:5px;"></div>'; initDrawUI(); }
+    }
+
+    function runGroupGame() {
+        if(curGroupGame==='race') startRace();
+        if(curGroupGame==='bomb') alert("가위바위보 진 사람부터 선을 하나씩 누르세요!");
+        if(curGroupGame==='tree') startTree();
+        if(curGroupGame==='draw') startDraw();
+        // bridge, pong은 개별 start 함수 있음
+    }
+
+    // -- 그룹 게임 UI 초기화 및 실행 함수들 (공간 절약을 위해 핵심만) --
+    function initRaceUI(){const t=document.querySelector('#track');t.innerHTML='<div style="position:absolute; right:10px; height:100%; width:2px; background:red;"></div>';players.forEach((p,i)=>t.innerHTML+=`<div class="lane"><span id="r-${i}" class="animal">${animals[i%8]}</span><small style="margin-left:30px">${p}</small></div>`)}
+    function startRace(){document.getElementById('g-start-btn').style.display='none';let racers=players.map((p,i)=>({id:i,n:p,x:0}));window.groupTimer=setInterval(()=>{let done=true;racers.forEach(r=>{if(r.x<90){done=false;r.x+=Math.random()*2;document.getElementById(`r-${r.id}`).style.left=r.x+'%'}});if(done){clearInterval(window.groupTimer);showGroupResult(racers.sort((a,b)=>b.x-a.x).map(r=>r.n));}},50)}
+    function initBombUI(){const w=document.getElementById('wires');let bomb=Math.floor(Math.random()*players.length);players.forEach((p,i)=>{w.innerHTML+=`<button onclick="if(${i}===${bomb}){alert('쾅!');showGroupResult(['${p} (탈락)']);}else{this.style.opacity=0.3;this.innerText='통과'}" style="padding:10px; flex:1 0 40%;">${p}</button>`})}
+    function initTreeUI(){const t=document.getElementById('tree-bg');players.forEach((p,i)=>{t.innerHTML+=`<div id="f-${i}" style="position:absolute; top:${Math.random()*100}px; left:${Math.random()*250}px; background:orange; width:30px; height:30px; border-radius:50%; line-height:30px; font-size:10px;">${p}</div>`})}
+    function startTree(){let fallen=0,res=[];let times=players.map(p=>({n:p,t:Math.random()*4000+1000})).sort((a,b)=>a.t-b.t);times.forEach(x=>{setTimeout(()=>{const el=[...document.querySelectorAll('div[id^="f-"]')].find(e=>e.innerText==x.n);if(el){el.style.top='170px';el.style.background='#555';fallen++;res.push(x.n);if(fallen==players.length)showGroupResult(res.reverse())}},x.t)})}
+    function initDrawUI(){const d=document.getElementById('draw-box');players.forEach(p=>d.innerHTML+='<div class="card" style="width:60px;height:80px;background:#ba68c8;margin:5px;display:flex;align-items:center;justify-content:center;">?</div>')}
+    function startDraw(){const d=document.getElementById('draw-box');d.innerHTML='';[...players].sort(()=>Math.random()-0.5).forEach((p,i)=>{setTimeout(()=>{d.innerHTML+=`<div style="width:60px;height:80px;background:#fff;color:#000;margin:5px;border:1px solid #ba68c8;display:flex;align-items:center;justify-content:center;font-size:12px;">${i+1}등<br>${p}</div>`},i*500)})}
+    
+    // Bridge & Pong (간략)
+    function startBridge(){alert("화면 공유 중인 MC가 진행해주세요!");} 
+    function startPong(){alert("화면 공유 중인 MC가 진행해주세요!");}
+
+    function showGroupResult(list){
+        const r=document.getElementById('g-result'); r.style.display='block';
+        r.innerHTML=`<h3>🏆 결과</h3><div style="font-size:20px; color:gold;">1위: ${list[0]}</div>`+(list[1]?`<div>2위: ${list[1]}</div>`:'');
+    }
+
+
+    /* ================= 👤 개인 모드: 스나이퍼 사격 ================= */
+    let sScore = 0;
+    let sTime = 30;
+    let targets = [];
+    
+    function startShootingGame() {
+        showScene('scene-shooting');
+        document.getElementById('res-shooting').style.display = 'none';
+        sScore = 0; sTime = 30; targets = [];
+        document.getElementById('s-score').innerText = 0;
+        document.getElementById('s-time').innerText = 30;
+        
+        const canvas = document.getElementById('canvas-shoot');
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+        const ctx = canvas.getContext('2d');
+        
+        // 클릭 이벤트
+        canvas.onmousedown = canvas.ontouchstart = function(e) {
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            // 터치/클릭 좌표 통일
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            const x = clientX - rect.left;
+            const y = clientY - rect.top;
             
-            participants = inputName.split(',').map(n => n.trim()).filter(n => n);
-            if (participants.length < 2) { alert("최소 2명 이상!"); return; }
+            // 타겟 적중 체크 (뒤에서부터 체크해야 위에 있는게 맞음)
+            for (let i = targets.length - 1; i >= 0; i--) {
+                const t = targets[i];
+                const dist = Math.sqrt((x - t.x)**2 + (y - t.y)**2);
+                if (dist < t.r) {
+                    // 명중!
+                    sScore += 10 + Math.floor((30 - t.r)); // 작은거 맞추면 점수 더줌
+                    document.getElementById('s-score').innerText = sScore;
+                    targets.splice(i, 1); // 제거
+                    createTarget(canvas.width, canvas.height); // 바로 새거 생성
+                    return; // 하나만 맞음
+                }
+            }
+        };
 
-            if(inputCode.trim()) setSeed(inputCode + gameType);
+        window.isGameRunning = true;
+        
+        // 타이머
+        window.shootTimer = setInterval(() => {
+            sTime--;
+            document.getElementById('s-time').innerText = sTime;
+            if(sTime <= 0) endShootingGame();
+        }, 1000);
 
-            document.querySelectorAll('.scene').forEach(el => el.classList.remove('active'));
-            document.getElementById(`scene-${gameType}`).classList.add('active');
+        // 게임 루프 (그리기)
+        function loop() {
+            if(!window.isGameRunning) return;
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            if(gameType === 'race') initRace();
-            if(gameType === 'bomb') initBomb();
-            if(gameType === 'fruit') initFruit();
-            if(gameType === 'bridge') initBridge();
-            if(gameType === 'draw') initDraw();
-        }
+            // 타겟 관리
+            if(targets.length < 3) createTarget(canvas.width, canvas.height);
 
-        function showResult(elId, list, title="🏆 순위 발표") {
-            const box = document.getElementById(elId);
-            box.style.display = 'block';
-            let html = `<h4>${title}</h4>`;
-            list.forEach((name, i) => {
-                html += `<div class="rank-item ${i===0?'rank-1':''}">${i+1}위 : ${name}</div>`;
+            targets.forEach(t => {
+                t.life--; 
+                // 그리기
+                ctx.beginPath();
+                ctx.arc(t.x, t.y, t.r, 0, Math.PI*2);
+                ctx.fillStyle = t.color;
+                ctx.fill();
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // 십자선 무늬
+                ctx.beginPath();
+                ctx.moveTo(t.x - t.r/2, t.y); ctx.lineTo(t.x + t.r/2, t.y);
+                ctx.moveTo(t.x, t.y - t.r/2); ctx.lineTo(t.x, t.y + t.r/2);
+                ctx.stroke();
             });
-            box.innerHTML = html;
+
+            // 수명 다한 타겟 제거 및 리필
+            targets = targets.filter(t => t.life > 0);
+
+            window.gameLoop = requestAnimationFrame(loop);
         }
+        loop();
+    }
 
-        // -------------------------
-        // 1. 달리기 (업그레이드: 스턴 추가, 속도 저하)
-        // -------------------------
-        function initRace() {
-            const track = document.getElementById('track');
-            track.innerHTML = '<div class="finish-line"></div>';
-            document.getElementById('race-result').style.display = 'none';
-            document.getElementById('btn-race-start').disabled = false;
+    function createTarget(w, h) {
+        targets.push({
+            x: Math.random() * (w - 60) + 30,
+            y: Math.random() * (h - 60) + 30,
+            r: Math.random() * 20 + 15, // 반지름 15~35
+            life: 100 + Math.random() * 50, // 프레임 수명
+            color: `hsl(${Math.random()*360}, 70%, 50%)`
+        });
+    }
+
+    function endShootingGame() {
+        stopAllGames();
+        document.getElementById('res-shooting').style.display = 'block';
+        document.getElementById('final-s-score').innerText = sScore + "점";
+        
+        let msg = "🔫 사격 훈련병";
+        if(sScore > 500) msg = "🔫 베테랑 스나이퍼";
+        if(sScore > 1000) msg = "🔫 전설의 명사수";
+        document.getElementById('s-rank-msg').innerText = msg;
+    }
+
+
+    /* ================= 👤 개인 모드: 피하기 게임 ================= */
+    let dScore = 0;
+    let playerX = 0;
+    let meteors = [];
+    let moveDir = 0; // -1: left, 1: right
+    
+    function startDodgeGame() {
+        showScene('scene-dodge');
+        document.getElementById('res-dodge').style.display = 'none';
+        dScore = 0;
+        document.getElementById('d-score').innerText = 0;
+        
+        const canvas = document.getElementById('canvas-dodge');
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+        const ctx = canvas.getContext('2d');
+        
+        playerX = canvas.width / 2;
+        meteors = [];
+        window.isGameRunning = true;
+        let frame = 0;
+
+        // 키보드 이벤트
+        window.onkeydown = (e) => {
+            if(e.code === 'ArrowLeft') moveDir = -1;
+            if(e.code === 'ArrowRight') moveDir = 1;
+        };
+        window.onkeyup = (e) => {
+            if(e.code === 'ArrowLeft' || e.code === 'ArrowRight') moveDir = 0;
+        };
+
+        function loop() {
+            if(!window.isGameRunning) return;
+            frame++;
+            dScore++; // 생존 점수
+            document.getElementById('d-score').innerText = dScore;
+
+            // 배경
+            ctx.fillStyle = '#111';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 플레이어 이동
+            playerX += moveDir * 5;
+            if(playerX < 15) playerX = 15;
+            if(playerX > canvas.width - 15) playerX = canvas.width - 15;
+
+            // 플레이어 그리기 (삼각형)
+            ctx.fillStyle = '#00e676';
+            ctx.beginPath();
+            ctx.moveTo(playerX, canvas.height - 40);
+            ctx.lineTo(playerX - 15, canvas.height - 10);
+            ctx.lineTo(playerX + 15, canvas.height - 10);
+            ctx.fill();
+
+            // 장애물 생성 (점점 어렵게)
+            let frequency = 30; // 30프레임마다 생성 (초기)
+            if(dScore > 1000) frequency = 20;
+            if(dScore > 2000) frequency = 10;
             
-            participants.forEach((name, i) => {
-                const lane = document.createElement('div');
-                lane.className = 'lane';
-                lane.innerHTML = `<span id="racer-${i}" class="animal" style="left:0%">${animals[i%animals.length]}</span> <small style="margin-left:5px; position: absolute; left: 0; bottom: 0; font-size:10px; color:#aaa;">${name}</small>`;
-                track.appendChild(lane);
-            });
-        }
-        function startRace() {
-            document.getElementById('btn-race-start').disabled = true;
-            let racers = participants.map((name, i) => ({ id: i, name: name, pos: 0, finished: false, stun: 0 }));
-            let rank = [];
-            
-            const raceInterval = setInterval(() => {
-                let allFinished = true;
-                racers.forEach(r => {
-                    if (!r.finished) {
-                        allFinished = false;
-                        const el = document.getElementById(`racer-${r.id}`);
-                        
-                        // 스턴 상태면 못 움직임
-                        if (r.stun > 0) {
-                            r.stun--;
-                            el.style.transform = 'rotate(-90deg)'; // 누운 모습
-                            return; 
-                        } else {
-                            el.style.transform = 'rotate(0deg)';
-                        }
-
-                        // 이동 로직 (조금 느리게, 편차 크게)
-                        let move = myRandom() * 1.5; 
-                        if(myRandom() > 0.98) { move += 5; } // 부스터
-                        if(myRandom() > 0.98) { r.stun = 15; } // 1.5초 넘어짐 (스릴 요소)
-
-                        r.pos += move;
-                        if (r.pos >= 88) {
-                            r.pos = 88;
-                            r.finished = true;
-                            rank.push(r.name);
-                        }
-                        el.style.left = r.pos + '%';
-                    }
+            if(frame % frequency === 0) {
+                meteors.push({
+                    x: Math.random() * canvas.width,
+                    y: -20,
+                    size: Math.random() * 10 + 10,
+                    speed: Math.random() * 3 + 2 + (dScore/2000) // 점점 빨라짐
                 });
-                if (allFinished) { clearInterval(raceInterval); showResult('race-result', rank); }
-            }, 100); // 0.1초마다 갱신 (좀 더 부드럽게)
-        }
-
-        // -------------------------
-        // 2. 폭탄 해체 (신규: 러시안 룰렛)
-        // -------------------------
-        let bombPlayers = [];
-        let bombIndex = 0;
-        function initBomb() {
-            document.getElementById('wire-box').innerHTML = '';
-            document.getElementById('bomb-status').innerText = '';
-            document.getElementById('bomb-result').style.display = 'none';
-            document.getElementById('bomb-display').innerText = '💣';
-            
-            // 플레이어 순서 섞기
-            bombPlayers = shuffle([...participants]);
-            const box = document.getElementById('wire-box');
-            
-            bombPlayers.forEach((p, i) => {
-                const btn = document.createElement('button');
-                btn.className = 'wire-btn';
-                btn.innerText = `✂️ ${p}`;
-                btn.id = `wire-${i}`;
-                btn.onclick = () => cutWire(i, p);
-                box.appendChild(btn);
-            });
-            
-            // 폭탄 터질 순서 미리 정해놓기 (시드 기반)
-            bombIndex = Math.floor(myRandom() * bombPlayers.length); 
-            // 힌트: bombIndex 번째 사람이 자르면 터짐
-        }
-        
-        function cutWire(idx, name) {
-            const status = document.getElementById('bomb-status');
-            const btn = document.getElementById(`wire-${idx}`);
-            btn.disabled = true;
-            
-            status.innerText = `${name}님이 선을 자르는 중...`;
-            
-            setTimeout(() => {
-                if (idx === bombIndex) {
-                    // 꽝!
-                    document.getElementById('bomb-display').innerText = '💥';
-                    btn.classList.add('wire-boom');
-                    status.innerText = "펑!!!!";
-                    // 터진 사람이 꼴찌, 나머지는 생존
-                    let rank = bombPlayers.filter((_, i) => i !== idx); // 생존자
-                    rank.push(name); // 꼴찌 추가
-                    showResult('bomb-result', rank.reverse(), "💀 생존자 명단 (마지막이 꽝)");
-                    
-                    // 나머지 버튼 비활성
-                    document.querySelectorAll('.wire-btn').forEach(b => b.disabled = true);
-                } else {
-                    // 통과
-                    btn.classList.add('wire-safe');
-                    status.innerText = "휴... 안전합니다.";
-                }
-            }, 1000); // 1초 쫄깃함
-        }
-
-        // -------------------------
-        // 3. 열매 (업그레이드: 흔들기 시간 증가)
-        // -------------------------
-        function initFruit() {
-            const tree = document.getElementById('tree-leaves');
-            tree.innerHTML = ''; tree.classList.remove('shaking');
-            document.getElementById('fruit-result').style.display = 'none';
-            document.getElementById('btn-fruit-start').disabled = false;
-            
-            participants.forEach((name, i) => {
-                const fruit = document.createElement('div');
-                fruit.className = 'fruit dangling'; // 흔들거림 추가
-                fruit.id = `fruit-${i}`;
-                fruit.innerText = name;
-                fruit.style.left = (Math.random() * 200 + 10) + 'px'; 
-                fruit.style.top = (Math.random() * 100 + 20) + 'px';
-                tree.appendChild(fruit);
-            });
-        }
-        function startFruit() {
-            document.getElementById('btn-fruit-start').disabled = true;
-            const tree = document.getElementById('tree-leaves');
-            tree.classList.add('shaking');
-            
-            let fallenCount = 0;
-            let fallOrder = [];
-            // 떨어지는 시간 범위 대폭 증가 (최대 8초)
-            let times = participants.map(name => ({ name: name, time: myRandom() * 6000 + 2000 }));
-            times.sort((a, b) => a.time - b.time);
-
-            times.forEach((item) => {
-                setTimeout(() => {
-                    const elements = Array.from(document.querySelectorAll('.fruit:not(.fallen)'));
-                    const target = elements.find(el => el.innerText === item.name);
-                    if(target) {
-                        target.style.top = '300px'; 
-                        target.classList.add('fallen');
-                        target.classList.remove('dangling');
-                    }
-                    fallenCount++;
-                    fallOrder.push(item.name);
-                    if (fallenCount === participants.length) {
-                        tree.classList.remove('shaking');
-                        showResult('fruit-result', fallOrder.reverse());
-                    }
-                }, item.time);
-            });
-        }
-
-        // -------------------------
-        // 4. 유리다리 (신규: 오징어 게임)
-        // -------------------------
-        let bridgeStep = 0;
-        let bridgePlayers = [];
-        let bridgeMap = []; // 0: left safe, 1: right safe
-        
-        function initBridge() {
-            const area = document.getElementById('bridge-area');
-            area.innerHTML = '';
-            document.getElementById('bridge-result').style.display = 'none';
-            document.getElementById('btn-bridge-start').disabled = false;
-            bridgePlayers = shuffle([...participants]);
-            bridgeMap = [];
-            
-            // 다리 생성 (참가자 수 * 1.5배 길이)
-            const len = Math.max(5, participants.length + 3);
-            for(let i=0; i<len; i++) {
-                bridgeMap.push(myRandom() > 0.5 ? 0 : 1); // 정답 생성
-                const step = document.createElement('div');
-                step.className = 'bridge-step';
-                step.innerHTML = `
-                    <div class="glass" id="g-${i}-0" onclick="stepBridge(${i}, 0)">L</div>
-                    <div class="glass" id="g-${i}-1" onclick="stepBridge(${i}, 1)">R</div>
-                `;
-                area.prepend(step); // 아래서부터 쌓기
             }
-            bridgeStep = 0;
-        }
 
-        function startBridge() {
-            document.getElementById('btn-bridge-start').disabled = true;
-            alert(`첫 번째 주자: ${bridgePlayers[0]}님 출발하세요!`);
-            highlightStep(0);
-        }
+            // 장애물 이동 및 충돌
+            for(let i=0; i<meteors.length; i++) {
+                let m = meteors[i];
+                m.y += m.speed;
 
-        function highlightStep(idx) {
-            // 현재 밟아야 할 단계 표시 (간단히 색상 변경 등 가능하나 여기선 생략)
-        }
+                // 그리기
+                ctx.fillStyle = '#ff5252';
+                ctx.beginPath();
+                ctx.arc(m.x, m.y, m.size, 0, Math.PI*2);
+                ctx.fill();
 
-        function stepBridge(row, choice) {
-            if (row !== bridgeStep) return; // 차례가 아닌 칸 클릭 방지
-            
-            const currentPlayer = bridgePlayers[0];
-            const correct = bridgeMap[row];
-            const glass = document.getElementById(`g-${row}-${choice}`);
-            
-            if (choice === correct) {
-                // 성공
-                glass.style.background = "#81c995"; // 초록
-                glass.innerText = currentPlayer;
-                bridgeStep++;
-                if (bridgeStep === bridgeMap.length) {
-                    alert(`${currentPlayer}님 통과! 우승!`);
-                    showResult('bridge-result', [currentPlayer, ...bridgePlayers.slice(1)], "🏆 최종 생존자");
-                }
-            } else {
-                // 실패 (와장창)
-                glass.classList.add('glass-break');
-                alert(`으악! ${currentPlayer} 탈락!`);
-                // 탈락자 명단 맨 뒤로 기록하거나 별도 처리
-                // 여기선 간단히 다음 사람에게 턴 넘김
-                bridgePlayers.shift(); // 현재 주자 제거
-                if (bridgePlayers.length === 0) {
-                    alert("전원 탈락... 게임 오버");
-                    showResult('bridge-result', participants, "💀 전원 사망 (기록 없음)");
-                } else {
-                    alert(`다음 주자: ${bridgePlayers[0]}님!`);
+                // 충돌 체크 (간단한 원-점 거리 체크)
+                // 플레이어 중심부와 거리
+                if(Math.abs(m.x - playerX) < (m.size + 10) && 
+                   Math.abs(m.y - (canvas.height-20)) < (m.size + 10)) {
+                    endDodgeGame();
+                    return;
                 }
             }
-        }
+            
+            // 화면 밖 나간 장애물 제거
+            meteors = meteors.filter(m => m.y < canvas.height + 50);
 
-        // -------------------------
-        // 5. 제비뽑기 (기존 유지)
-        // -------------------------
-        function initDraw() {
-            const area = document.getElementById('draw-area');
-            area.innerHTML = '';
-            document.getElementById('draw-result').style.display = 'none';
-            document.getElementById('btn-draw-start').disabled = false;
-            participants.forEach(() => area.innerHTML += '<div class="card">?</div>');
+            window.gameLoop = requestAnimationFrame(loop);
         }
-        function startDraw() {
-            document.getElementById('btn-draw-start').disabled = true;
-            const area = document.getElementById('draw-area');
-            area.innerHTML = '';
-            let shuffled = shuffle([...participants]);
-            shuffled.forEach((name, i) => {
-                const card = document.createElement('div');
-                card.className = 'card'; card.innerText = '?';
-                area.appendChild(card);
-                setTimeout(() => {
-                    card.classList.add('flipped');
-                    card.innerText = `${i+1}등\n${name}`;
-                    card.style.fontSize = "14px";
-                }, i * 300 + 200);
-            });
-            setTimeout(() => showResult('draw-result', shuffled), participants.length * 300 + 500);
-        }
-    </script>
+        loop();
+    }
+    
+    // 모바일 터치 컨트롤
+    function moveDodge(dir) {
+        if(dir === 'left') moveDir = -1;
+        if(dir === 'right') moveDir = 1;
+    }
+    function stopDodge() { moveDir = 0; }
+
+    function endDodgeGame() {
+        stopAllGames();
+        document.getElementById('res-dodge').style.display = 'block';
+        document.getElementById('final-d-score').innerText = dScore + "점";
+    }
+
+</script>
 </body>
 </html>
